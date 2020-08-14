@@ -70,7 +70,7 @@ x[x%%2 == 0 & x > 0]
 A = matrix(c(1,2,3,4,5,6,7,8,9,10,11,12),nrow=4,"byrow"="true")
 Luego, obtenga algunos elementos de la matriz de la siguiente manera: A[1,1:3], A[1:4,2], A[3,3], A[11], A[20], A[5,4], A[1,1,1] y explique qu ́e pasa en cada caso.
 
-```{r}
+```{r, eval= FALSE}
 A = matrix(c(1,2,3,4,5,6,7,8,9,10,11,12),nrow=4,"byrow"="true")
 
 A[1,1:3] #muestra los primeros tres elementos de la fila uno
@@ -179,6 +179,8 @@ lines(DJTable$MSFT, type = "l", col = "purple")
 
 9. Repita el ejercicio anterior usando funciones del paquete ggplot2.
 ```{r}
+library(ggplot2)
+
 DJTable %>%
   ggplot(mapping = aes(x= FECHA)) +
   geom_line(mapping = aes(y= CSCO, color = "CSCO"))+
@@ -252,6 +254,296 @@ summary(Datos)[4,] #la función no retornó el calculo de la media debido al tip
 11. Usando el archivo de datos EjemploAlgoritmosRecomendacion.csv realice lo siguiente:
 
 a) Grafique usando los comandos plot y qplot en el plano XY las variables Entrega vs Precio.
+```{r}
+
+
+EjemploAlgoritmosRecomendacion <- read.table("DatosTarea1/EjemploAlgoritmosRecomendacion.csv", 
+    ";", dec = ",", header = TRUE, row.names = 1)
+
+
+plot(EjemploAlgoritmosRecomendacion$VelocidadEntrega, EjemploAlgoritmosRecomendacion$Precio, col = c("purple","green"), 
+   main = "", ylab = "Precio", xlab = "Velocidad de Entrega")
+
+qplot(EjemploAlgoritmosRecomendacion$VelocidadEntrega,EjemploAlgoritmosRecomendacion$Precio, 
+   main = "", ylab = "Precio", xlab = "Velocidad de Entrega")
+```
+
+b) Grafique usando comando scatterplot3d en 3 dimensiones las variables Entrega, Precio y Durabilidad.
+
+```{r}
+library(scatterplot3d)
+
+scatterplot3d(EjemploAlgoritmosRecomendacion[,1:3])
+
+```
+
+c) Usando el comando cor calcule la matriz de correlaciones de la tabla EjemploAlgoritmos Recomendacion.csv y grafique esta matriz de 4 formas diferentes.
+
+```{r}
+library(corrplot)
+library(PerformanceAnalytics)
+correlaciones <- cor(EjemploAlgoritmosRecomendacion)
+
+heatmap(x = correlaciones, symm = TRUE)
+chart.Correlation(correlaciones, histogram=TRUE, pch=19)
+corrplot(correlaciones)
+```
+
+d) Usando el comando Boxplot encuentre los datos atípicos de la tabla de datos Ejemplo AlgoritmosRecomendacion.csv.
+
+```{r}
+boxplot(EjemploAlgoritmosRecomendacion)
+```
+
+12. Cargue la tabla de datos que está en el archivo SAheartv.csv haga lo siguiente:
+```{r}
+SAheart <- read.table("DatosTarea1/SAheart.csv", 
+    ";", dec = ".", header = TRUE)
+```
+
+Calcule la dimensión de la Tabla de Datos.
+
+```{r}
+dim(SAheart) #462 filas y 10 columnas
+```
+
+Despliegue las primeras 3 columnas de la tabla de datos.
+
+```{r}
+SAheart[,1:3]
+```
+Ejecute un summary y un str de los datos.
+
+```{r}
+str(SAheart)
+
+summary(SAheart)
+```
+
+Usando el comando cor de R calcule la correlación entre las variables tobacco y alcohol. 
+```{r}
+cor(SAheart$tobacco, SAheart$alcohol)
+```
+
+
+Calcule la suma de las columnas con variables cuantitativas (numéricas).
+```{r}
+colSums(SAheart[,-c(5,10)])
+```
+
+
+
+Calcule para todas las variables cuantitativas presentes en el archivo SAheart.csv: El mínimo, el máximo, la media, la mediana y para la variables chd determine la cantidad de Si y de No.
+```{r}
+
+summary(SAheart[,-c(5,10)])[c(1,6,4,3),]
+
+SAheart%>%
+  count(chd, name = "Cantidad")
+
+SAheart%>%
+  count(famhist, name = "Cantidad")
+```
+
+13. Programe en R una función que genera 200 números al azar entre 1 y 500 y luego calcula cuántos están entre el 50 y 450, ambos inclusive.
+
+```{r}
+numeros <- as.numeric(sample(1:500, 200))
+
+numeros[numeros > 50  & numeros < 450]
+```
+
+14. Desarrolle una función que calcula el costo de una llamada telefónica que ha durado t minutos sabiendo que si t < 1 el costo es de 0,4 dólares, mientras que para duraciones superiores el costo es de 0,4 + (t − 1)/4 dólares, la función debe recibir el valor de t.
+
+```{r}
+
+llamadaTelefonica <- function(t){
+  costo <- 0
+
+  if (t <= 0){
+    costo <- costo
+    } else if  (t > 0 & t < 1){
+      costo <- 0.4
+      } else{
+        costo <- 0.4 + (t-1)/4
+        }
+  return(costo)
+  } 
+
+llamadaTelefonica(10)
+```
+
+15. Desarrolle una función que recibe una matriz cuadrada A de tamaño n × n y calcula su traza, es decir, la suma de los elementos de la diagonal. Por ejemplo, la traza de la siguiente matriz es 10
+```{r}
+knitr::include_graphics("Captura de Pantalla 2020-08-14 a la(s) 10.54.44.png")
+
+B <- matrix(c(9,1,4,3,3,12,4,-1,-2),nrow = 3,ncol = 3)
+
+B
+
+trazaMatriz <- function(x){
+  return(sum(diag(x)))
+}
+
+trazaMatriz(B)
+```
+16. Escribir una función que genere los n primeros términos de la serie de Fibonacci.
+
+```{r}
+Fibonacci <- function(n){
+  serie <- 0
+  for (i in 0:n){ 
+    serie[i+1] <- (((1+sqrt(5))/2)^i - ((1-sqrt(5))/2)^i)/sqrt(5)
+  }
+  return(serie)
+}
+
+Fibonacci(10)
+```
+
+
+17. Escriba una función que retorne cúal es el mayor número entero cuyo cuadrado no excede de x donde x es un número real que se recibe como parámetro, utilizando while.
+
+```{r}
+cuadrado <- function(x){
+  i <- 1
+  while(sqrt(i)<x){
+    i<- i+1
+  }
+  
+  return(i)
+}
+
+cuadrado(15)
+```
+
+18. Crear un Data Frame con diez alumnos con su edad, año de nacimiento y número de teléfono. Deberá aparecer el nombre de la columna (edad, año de nacimiento, teléfono) y el nombre de la fila, que será el nombre del alumno al que corresponden los datos.
+
+```{r}
+alumnos <- data.frame(edad = c(8,8,9,9,9,8,9,9,10,8),
+           añoNac = c(2011,2011,2011,2011,2011,2011,2011,2011,2010,2011),
+           numTelef =  as.vector(sample(80000000:89999999,10)))
+
+nombres <- c("Maria","Jose","Ana", "Paula", "Cristina", "Guillermo", "Carlos", "Jason", "Jocelyn", "Luis" )
+
+rownames(alumnos) <- nombres
+
+alumnos
+```
+19. Programe funciones en R para calcular:
+
+El número de permutaciones con repetición de r objetos tomados de n.
+```{r}
+permutRep <- function(r,n,k){
+  return(n^(r))
+}
+
+permutRep(2,3,1)
+```
+
+
+El número de permutaciones sin repetición, o arreglo, de r objetos tomados de n.
+
+```{r}
+permutNoRep <- function(r,n){
+  factorial(n)/factorial(n-r)
+}
+
+permutNoRep(2,3)
+```
+
+El número de permutaciones con repetición de n objetos, de los cuales solo k son distintos.
+
+```{r}
+PermutacEspecial <-function(n,k,v){
+
+  
+  if(sum(v) == n & length(v) == k){
+     
+    producto <- factorial(n)
+    
+    
+    for (i in 1:k){
+    
+      producto <- producto * 1/factorial(v[i])
+    }
+    
+  } else {
+    producto <- NA
+  }
+  
+  return(producto)
+}
+
+v <- c(2,2,2,1)
+
+PermutacEspecial(7,4,v)      
+        
+```
+
+
+
+El número de combinaciones es un subconjunto desordenado de r objetos seleccionados en un conjunto que contiene n.
+```{r}
+combinacNoRep <- function(r,n){
+  
+  factorial(n)/(factorial(r)*factorial(n-1))
+}
+```
+
+
+El número de combinaciones con repetición es un subconjunto desordenado de r objetos seleccionados de un conjunto que contiene n en los cuales se pueden repetir.
+
+```{r}
+combinacRep <- function(r,n){
+  factorial(n+r-1)/(factorial(r)*factorial(n-1))
+}
+```
+
+El nu ́mero de particiones de n objetos en r clases, el cual se conoce como el nu ́mero de Stirling de segundo tipo.
+```{r}
+Stirling <- function(n,k){
+  
+  resultado <- 0
+  
+  for(j in 0:k){
+    
+    resultado <- resultado + (-1)^(k-j) * factorial(k)/factorial(k-j) * j^n
+      
+  }
+  
+  return(resultado*1/factorial(k))
+  
+} 
+
+Stirling(8,3)
+```
+
+20. Desarrolle una función R que recibe un DataFrame que retorna la cantidad de entradas de este DataFrame que son divisibles entre 3.
+
+```{r}
+esDivisible <- function(x){
+  
+  divisibles <- 0
+  dimensiones <-dim(x)
+  for(i in 1:dimensiones[2]){
+    for(j in 1:dimensiones[1]){
+      if(typeof(x[,i]) == "integer" | typeof(x[,i]) == "numeric"| typeof(x[,i]) == "double"){
+        if(x[j,i]%%3 == 0){
+          divisibles <- divisibles + 1
+        } 
+      }
+    }
+  }
+  return(divisibles)
+}
+
+esDivisible(alumnos)
+
+```
+
+21. Desarrolle una función R que recibe un DataFrame y dos numéros de columna y que retorna en una lista el nombre de las variables correspondientes a las columnas, la covarianza y la correlación entre esas dos variables.
+
 ```{r}
 
 ```
