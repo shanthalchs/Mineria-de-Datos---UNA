@@ -10,6 +10,8 @@ output:
 ```{r setup, echo=FALSE, cache=FALSE}
 library(knitr)
 library(rmdformats)
+library(ggplot2)
+library(GGally)
 
 ## Global options
 options(max.print="75")
@@ -47,17 +49,47 @@ para entrenamiento un 80 % de la tabla de datos.
 
 ```{r, eval=FALSE}
 library(readr)
+library(corrplot)
 DeudaCredito <- read.table("Datos_EjemplosClase_Tarea/DeudaCredito.csv", sep = ",", header = TRUE)
 
+```
+
+```{r}
 str(DeudaCredito)
 
 azar <- sample(1:nrow(DeudaCredito), nrow(DeudaCredito)*0.8)
 
-tAprendizaje <- DeudaCredito[azar,]
+ochentaPorcentaje <- DeudaCredito[azar,]
 
-tTesting <- DeudaCredito[-azar,]
+veintePorcentaje <- DeudaCredito[-azar,]
 ```
 
-## 2. 
+## 2. Realice un Análisis Exploratorio de los datos con todos los datos que incluya al menos:
+• summary(...).
 
+```{r}
+summary(DeudaCredito)
+```
+
+• La matriz de correlaciones y alguno de sus gráficos. Interprete al menos dos correlaciones.
+```{r}
+DeudaCreditoCuantitativo <- Filter(is.numeric, DeudaCredito)[,-1]
+
+matriz.correlacion <- cor(DeudaCreditoCuantitativo)
+matriz.correlacion
+
+corrplot(matriz.correlacion)
+
+col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+corrplot(matriz.correlacion, method="shade", shade.col=NA, tl.col="black", tl.srt=45,
+col=col(200), addCoef.col="black", order="AOE")
+
+ggpairs(DeudaCreditoCuantitativo)
+```
+
+• Encuentre al menos 3 datos atípicos, si es que existen en esta tabla de datos.
+
+```{r}
+
+```
 
