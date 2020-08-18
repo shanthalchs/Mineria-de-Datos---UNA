@@ -1,0 +1,63 @@
+---
+title: ""
+date: "`r Sys.Date()`"
+output:
+  rmdformats::material:
+    highlight: kate
+---
+
+
+```{r setup, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=FALSE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+```
+
+
+#Pregunta 1. {.tabset .tabset-fade}
+Suponga que trabajamos para un banco y se nos pide predecir el monto promedio de deuda en tarjeta de cr´edito de una cartera de clientes relativamente nuevos, basado en otra cartera de comportamiento y estructura similar de la cual sí se tiene información de deuda en
+tarjeta de crédito. En este ejercicio hacemos uso de la tabla de datos DeudaCredito.csv que contiene información de los clientes en una de las principales carteras de crédito del banco, e
+incluye variables que describen cada cliente tanto dentro del banco como fuera de este.
+Esta tabla de datos contiene 400 clientes y 11 variables que los describen. Seguidamente se explican las variables que conforman la tabla.
+
+• Ingreso: Ingreso del cliente, en miles de dólares.
+• Limite: Límite de crédito global en tarjetas de crédito del cliente.
+• CalifCredit: Calificación crediticia del cliente.
+• Tarjetas: Cantidad de tarjetas de crédito del cliente.
+• Edad: Edad del cliente.
+• Educacion: Años de educación del cliente.
+• Genero: Género del cliente.
+• Estudiante: Indica si el cliente es estudiante o no.
+• Casado: Indica si el cliente es casado o no (1 = Sí, 0 = No).
+• Etnicidad: Indica si el cliente es caucásico, afroamericano o asiático.
+• Balance: Monto promedio de deuda en tarjeta de crédito del cliente, en dólares.
+Realice lo siguiente:
+## 1. Cargue la tabla de datos en R y asegúrese que las variables se están leyendo de forma correcta. ¿Es necesario recodificar variables? Seleccione la variable a predecir, y tome
+para entrenamiento un 80 % de la tabla de datos.
+
+```{r, eval=FALSE}
+library(readr)
+DeudaCredito <- read.table("Datos_EjemplosClase_Tarea/DeudaCredito.csv", sep = ",", header = TRUE)
+
+str(DeudaCredito)
+
+azar <- sample(1:nrow(DeudaCredito), nrow(DeudaCredito)*0.8)
+
+tAprendizaje <- DeudaCredito[azar,]
+
+tTesting <- DeudaCredito[-azar,]
+```
+
+## 2. 
+
+
