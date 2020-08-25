@@ -1,13 +1,16 @@
 ---
-title: ""
+title: "Tarea 3"
+author: "Shantal Chavarría"
 date: "`r Sys.Date()`"
 output:
   rmdformats::material:
     highlight: kate
+    df_print: paged
+
 ---
 
 
-```{r setup, echo=FALSE, cache=FALSE}
+```{r setup, echo=FALSE, cache=FALSE,message=FALSE}
 library(knitr)
 library(rmdformats)
 library(ggplot2)
@@ -15,8 +18,8 @@ library(GGally)
 
 ## Global options
 options(max.print="75")
-opts_chunk$set(echo=FALSE,
-	             cache=TRUE,
+opts_chunk$set(echo=TRUE,
+	             cache=FALSE,
                prompt=FALSE,
                tidy=TRUE,
                comment=NA,
@@ -26,7 +29,7 @@ opts_knit$set(width=75)
 ```
 
 
-#Pregunta 1. {.tabset .tabset-fade}
+# Pregunta 1. {.tabset .tabset-fade}
 Suponga que trabajamos para un banco y se nos pide predecir el monto promedio de deuda en tarjeta de cr´edito de una cartera de clientes relativamente nuevos, basado en otra cartera de comportamiento y estructura similar de la cual sí se tiene información de deuda en
 tarjeta de crédito. En este ejercicio hacemos uso de la tabla de datos DeudaCredito.csv que contiene información de los clientes en una de las principales carteras de crédito del banco, e
 incluye variables que describen cada cliente tanto dentro del banco como fuera de este.
@@ -47,42 +50,51 @@ Realice lo siguiente:
 ## 1. Cargue la tabla de datos en R y asegúrese que las variables se están leyendo de forma correcta. ¿Es necesario recodificar variables? Seleccione la variable a predecir, y tome
 para entrenamiento un 80 % de la tabla de datos.
 
-```{r, eval=FALSE}
+```{r}
+library(dplyr)
 library(readr)
 library(corrplot)
+
 DeudaCredito <- read.table("Datos_EjemplosClase_Tarea/DeudaCredito.csv", sep = ",", header = TRUE)
 
+DeudaCredito
+
+str(DeudaCredito)
 ```
+
+
+## 1. 
+Cargue la tabla de datos en R y asegúrese que las variables se están leyendo de forma correcta. ¿Es necesario recodificar variables? Seleccione la variable a predecir, y tome para entrenamiento un 80 % de la tabla de datos.
 
 ```{r}
-str(DeudaCredito)
-
+library(dummies)
 azar <- sample(1:nrow(DeudaCredito), nrow(DeudaCredito)*0.8)
 
-ochentaPorcentaje <- DeudaCredito[azar,]
+DeudaCreditoCuantitativo <- dummy.data.frame(DeudaCredito, sep = ".")[,-1]
 
-veintePorcentaje <- DeudaCredito[-azar,]
+ochentaPorcentaje <- DeudaCreditoCuantitativo[azar,]
+
+veintePorcentaje <- DeudaCreditoCuantitativo[-azar,]
+
+
+#variable a predecir sería Balance
 ```
 
-## 2. Realice un Análisis Exploratorio de los datos con todos los datos que incluya al menos:
+## 2. 
+Realice un Análisis Exploratorio de los datos con todos los datos que incluya al menos:
+
 • summary(...).
 
 ```{r}
-summary(DeudaCredito)
+summary(DeudaCreditoCuantitativo)
 ```
 
 • La matriz de correlaciones y alguno de sus gráficos. Interprete al menos dos correlaciones.
-```{r}
-DeudaCreditoCuantitativo <- Filter(is.numeric, DeudaCredito)[,-1]
-
+```{r,fig.height = 8, fig.width = 12}
 matriz.correlacion <- cor(DeudaCreditoCuantitativo)
 matriz.correlacion
 
 corrplot(matriz.correlacion)
-
-col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
-corrplot(matriz.correlacion, method="shade", shade.col=NA, tl.col="black", tl.srt=45,
-col=col(200), addCoef.col="black", order="AOE")
 
 ggpairs(DeudaCreditoCuantitativo)
 ```
@@ -91,36 +103,30 @@ ggpairs(DeudaCreditoCuantitativo)
 
 ```{r}
 library(car)
-lapply(DeudaCreditoCuantitativo, Boxplot)
+Filter(is.numeric,lapply(DeudaCreditoCuantitativo, Boxplot))
 
 ```
-## 3. Basado en las estadísticas básicas explique cuál variable numérica parece ser la mejor para predecir la deuda en tarjeta de crédito.
+## 3. 
+Basado en las estadísticas básicas explique cuál variable numérica parece ser la mejor para predecir la deuda en tarjeta de crédito.
 
 Basado en la matriz de correlaciones, diría que la variable del Limite o la Calificación de Credito tiene una correlación alta con el Balance.
 
 
-## 4. Genere un modelo de regresión lineal múltiple incluyendo las todas las variables predictoras. ¿Cuáles coeficientes obtiene para los β? Dé una interpretación de 3 de los coeficientes que se obtienen en el modelo. ¿Cuál variable parece tener más impacto sobre la variable a predecir y por qué?
+## 4. 
+Genere un modelo de regresión lineal múltiple incluyendo las todas las variables predictoras. ¿Cuáles coeficientes obtiene para los β? Dé una interpretación de 3 de los coeficientes que se obtienen en el modelo. ¿Cuál variable parece tener más impacto sobre la variable a predecir y por qué?
 
 ```{r}
-
-modelo <- lm(Limite ~ Balance, data = DeudaCreditoCuantitativo)
-
-plot(DeudaCreditoCuantitativo$Balance, DeudaCreditoCuantitativo$Limite, pch = 19)
-grid(6,6, lwd = 2)
-abline(modelo, col = "red")
-
-
-
-modelo <- lm(Balance ~ . , data = DeudaCreditoCuantitativo)
+modelo <- lm(Balance ~ . , data = ochentaPorcentaje)
 modelo
 
 summary(modelo)
 ```
 El R2 es cercano a 1 por lo que tenemos un buen modelo de prediccion.
-Observando el p- value de Ingreso y CalifCredit tiene una buena probabilidad 
+Observando el p- value de Ingreso, Límite y CalifCredit tiene una buena probabilidad 
 
 
-##5. ¿Qué error se obtiene sobre la tabla de testing para el modelo de regresión lineal? Interprete las medidas de error obtenidas.
+##4. 
+¿Qué error se obtiene sobre la tabla de testing para el modelo de regresión lineal? Interprete las medidas de error obtenidas.
 
 ```{r}
 RSS <- function(Pred,Real) {
@@ -155,19 +161,24 @@ indices.precision <- function(real, prediccion,cantidad.variables.predictoras) {
 numero.predictoras <- dim(DeudaCreditoCuantitativo)[2] - 1
 #Usando los datos del 80%
 
-modelo.lm <- lm(Balance~ ., data = Filter(is.numeric,ochentaPorcentaje)[,-1])
+modelo.lm <- lm(Balance~ ., data = ochentaPorcentaje)
 modelo.lm
 
-prediccion <- predict(modelo.lm, Filter(is.numeric, veintePorcentaje)[,-1])
+prediccion <- predict(modelo.lm, Filter(is.numeric, veintePorcentaje))
 
 pre.lm <- indices.precision(veintePorcentaje$Balance, prediccion, numero.predictoras)
 
 pre.lm
 ```
-## 6. Si tuviera que eliminar alguna o algunas de las variables con la esperanza de que mejore la predicción ¿Cuál o cuáles de las variables eliminaría? ¿El nuevo modelo mejora la predicción?
+## 6. 
+Si tuviera que eliminar alguna o algunas de las variables con la esperanza de que mejore la predicción ¿Cuál o cuáles de las variables eliminaría? ¿El nuevo modelo mejora la predicción?
+
+Viendo la matriz de correlaciones parece que las variables que se relacionan en menor magnitud con Balance son Edad y Educación. Sin embargo el nuevo modelo hay una diferencia menor pero no significativa
 
 ```{r}
+test <- DeudaCreditoCuantitativo[-c(5,6)]
 
+summary(lm(Balance~. , test))
 ```
 
 # Pregunta 2: {.tabset .tabset-fade}
@@ -190,7 +201,8 @@ la tienda.
 
 Realice lo siguiente:
 
-## 1. Cargue la tabla de datos en R. En caso de ser necesario, recodificar las variables de forma adecuada. Seleccione la variable a predecir, y para medir el error tome un 15 % de la tabla de datos.
+## 1. 
+Cargue la tabla de datos en R. En caso de ser necesario, recodificar las variables de forma adecuada. Seleccione la variable a predecir, y para medir el error tome un 15 % de la tabla de datos.
 
 En este caso Ventas sería la variable a predecir
 
@@ -199,25 +211,31 @@ En este caso Ventas sería la variable a predecir
 AsientosNinno <- read_delim("Datos_EjemplosClase_Tarea/AsientosNinno.csv", 
     ";", escape_double = FALSE, trim_ws = TRUE)
 
-azar <- sample(1:nrow(AsientosNinno), nrow(AsientosNinno)*0.85)
+AsientosNinno <- data.frame(AsientosNinno)
 
-ochentacincoPorcentaje <- AsientosNinno[azar,]
+AsientosNinno$CalidadEstant <- as.factor(AsientosNinno$CalidadEstant)
 
-quincePorcentaje <- AsientosNinno[-azar,]
+AsientosNinnoCuantitativo <- dummy.data.frame(AsientosNinno, sep = ";")[,-1]
+
+azar <- sample(1:nrow(AsientosNinnoCuantitativo), nrow(AsientosNinnoCuantitativo)*0.85)
+
+ochentacincoPorcentaje <- AsientosNinnoCuantitativo[azar,]
+
+quincePorcentaje <- AsientosNinnoCuantitativo[-azar,]
 
 ```
 
-##2.Realice un Análisis Exploratorio de los datos con todos los datos que incluya al menos:
+## 2.
+Realice un Análisis Exploratorio de los datos con todos los datos que incluya al menos:
 • summary(...).
 ```{r}
-summary(AsientosNinno)
+summary(AsientosNinnoCuantitativo)
 ```
 
 
 • La matriz de correlaciones y alguno de sus gráficos. Interprete al menos dos correlaciones.
 
-```{r}
-AsientosNinnoCuantitativo <- Filter(is.numeric,AsientosNinno)[,-1]
+```{r, fig.height = 8, fig.width = 12}
 
 matriz.correlaciones <- cor(AsientosNinnoCuantitativo)
 
@@ -232,44 +250,44 @@ Las variables de Ventas, PrecioCompt y Precio tienen valores atípicos.
 ```{r}
 lapply(AsientosNinnoCuantitativo,Boxplot)
 ```
-##3. Aplique el modelo de regresi´on lineal m´ultiple incluyendo todas las variables predictoras.
+## 3. 
+Aplique el modelo de regresi´on lineal m´ultiple incluyendo todas las variables predictoras.
 
 ```{r}
 
-modelo <- lm(Ventas ~ . , data = AsientosNinnoCuantitativo)
+modelo <- lm(Ventas ~ . , data = ochentacincoPorcentaje)
 modelo
 
 summary(modelo)
 ```
-##4. ¿Qué error se obtiene sobre la tabla de training para el modelo generado anteriormente?
+## 4.
+¿Qué error se obtiene sobre la tabla de training para el modelo generado anteriormente?
 
 ```{r}
 numero.predictoras <- dim(AsientosNinnoCuantitativo)[2] - 1
 
 #Usando los datos del 80%
-modelo.lm <- lm(Precio ~ ., data = Filter(is.numeric,ochentacincoPorcentaje)[,-1])
-modelo.lm
-
-prediccion <- predict(modelo.lm, Filter(is.numeric, quincePorcentaje)[,-1])
+prediccion <- predict(modelo, Filter(is.numeric, quincePorcentaje)[,-1])
 
 pre.lm <- indices.precision(quincePorcentaje$Precio, prediccion, numero.predictoras)
 
 pre.lm
 ```
 
-#Pregunta 3: {.tabset .tabset-fade}
-La Tabla de Datos uscrime.csv contiene el c´alculo de´ındice de cr´ımenes violentos por habitante en Estados Unidos, como son el asesinato, la violaci´on, el robo y asalto. Las variables incluidas son, entre otras, el porcentaje de la poblaci´on considerada urbana, la renta media de la familia, la participaci´on de las fuerzas del orden, el n´umero de polic´ıas per c´apita, el porcentaje de los oficiales asignados a las unidades de la droga. La variable a predecir es ViolentCrimesPerPop (Per Capita Violent Crimes in US). Usando un 67 % de esta tabla para Tabla de Aprendizaje y el restante 33 % para Tabla de Testing efectue lo siguiente:
+# Pregunta 3: {.tabset .tabset-fade}
+La Tabla de Datos uscrime.csv contiene el cálculo de índice de crímenes violentos por habitante en Estados Unidos, como son el asesinato, la violación, el robo y asalto. Las variables incluidas son, entre otras, el porcentaje de la población considerada urbana, la renta media de la familia, la participación de las fuerzas del orden, el número de policías per cápita, el porcentaje de los oficiales asignados a las unidades de la droga. La variable a predecir es ViolentCrimesPerPop (Per Capita Violent Crimes in US). Usando un 67 % de esta tabla para Tabla de Aprendizaje y el restante 33 % para Tabla de Testing efectue lo siguiente:
 
-##1. Realice un Análisis Exploratorio de los datos con todos los datos.
-```{r}
+## 1.
+Realice un Análisis Exploratorio de los datos con todos los datos.
+```{r, fig.height = 8, fig.width = 12}
 uscrime <- read_csv("Datos_EjemplosClase_Tarea/uscrime.csv")
 
-uscrimeCuantitativas <- Filter(is.numeric, uscrime)
+uscrimeCuantitativas <- dummy.data.frame(uscrime, sep = ";")
 
 azar2 <- sample(1:nrow(uscrime), nrow(uscrime)*0.67)
 
-aprendizajeUscrime <- uscrime[azar2,]
-pruebaUscrime <- uscrime[-azar2,]
+aprendizajeUscrime <- uscrimeCuantitativas[azar2,]
+pruebaUscrime <- uscrimeCuantitativas[-azar2,]
 
 matriz.corrA <- cor(aprendizajeUscrime)
 matriz.corrP <- cor(pruebaUscrime)
@@ -278,24 +296,62 @@ corrplot(matriz.corrA)
 corrplot(matriz.corrP)
 ```
 
+## 2. 
+Construya un modelo predictivo para la variable ViolentCrimesPerPop usando una Regresión Lineal Múltiple con la función lm(...) en la Tabla de Aprendizaje y calcule Error Estándar de los Residuos para este modelo, además calcule el Error Cuadrático Medio y el Error Relativo para la Tabla de Testing.
 
 ```{r}
 modelo.predictivo <- lm(ViolentCrimesPerPop~ . , data = aprendizajeUscrime)
+
 modelo.predictivo
 
 numero.predictoras <- dim(uscrimeCuantitativas)[2] - 1
 
-#Usando los datos del 80%
-modelo.lm <- lm(ViolentCrimesPerPop~ ., data = Filter(is.numeric,ochentacincoPorcentaje)[,-1])
-modelo.lm
+#Usando los datos del 85%
 
-prediccion <- predict(modelo.lm, Filter(is.numeric, quincePorcentaje)[,-1])
+prediccion <- predict(modelo.predictivo, pruebaUscrime)
 
-pre.lm <- indices.precision(quincePorcentaje$Precio, prediccion, numero.predictoras)
+pre.lm <- indices.precision(pruebaUscrime$ViolentCrimesPerPop, prediccion, numero.predictoras)
 
 pre.lm
 
-gg
-geom_boxplot()
+
+```
+
+# Pregunta 4. (Opcional)  {.tabset .tabset-fade}
+## 1.
+Programe en R una función lm2(...) que recibe como parámetro una tabla de aprendizaje y retorna un modelo de Regresión Lineal, es decir, calcula y retorna $β = (X^tX)^{−1}X^ty$.
+
+```{r}
+lm2 <- function(y,X){
+
+    b = base::solve(t(X)%*%X) %*% t(X) %*% y 
+    
+  return(b)
+}
+
+x <- as.matrix(Filter(is.numeric, DeudaCredito[-c(1,12)]))
+
+y <- as.matrix(Filter(is.numeric, DeudaCredito[12]))
+
+lm(formula = Balance~., data = DeudaCreditoCuantitativo)
+lm2(y, x)
+```
+
+## 2. 
+Programe en R una función predict2(...) que recibe como parámetro el modelo construido en la pregunta anterior, una tabla de testing de modo tal que retorna la predicción para esta tabla de testing.
+```{r}
+
+predict2 <- function(m,X){
+
+  resultado <- m*X
+  
+  return(resultado) 
+}
+
+m <- lm2(y, x)
+
+
+
+predict2(m, Filter(is.numeric, veintePorcentaje)[,-1])
 ```
 
