@@ -90,6 +90,210 @@ ggpairs(DeudaCreditoCuantitativo)
 • Encuentre al menos 3 datos atípicos, si es que existen en esta tabla de datos.
 
 ```{r}
+library(car)
+lapply(DeudaCreditoCuantitativo, Boxplot)
+
+```
+## 3. Basado en las estadísticas básicas explique cuál variable numérica parece ser la mejor para predecir la deuda en tarjeta de crédito.
+
+Basado en la matriz de correlaciones, diría que la variable del Limite o la Calificación de Credito tiene una correlación alta con el Balance.
+
+
+## 4. Genere un modelo de regresión lineal múltiple incluyendo las todas las variables predictoras. ¿Cuáles coeficientes obtiene para los β? Dé una interpretación de 3 de los coeficientes que se obtienen en el modelo. ¿Cuál variable parece tener más impacto sobre la variable a predecir y por qué?
+
+```{r}
+
+modelo <- lm(Limite ~ Balance, data = DeudaCreditoCuantitativo)
+
+plot(DeudaCreditoCuantitativo$Balance, DeudaCreditoCuantitativo$Limite, pch = 19)
+grid(6,6, lwd = 2)
+abline(modelo, col = "red")
+
+
+
+modelo <- lm(Balance ~ . , data = DeudaCreditoCuantitativo)
+modelo
+
+summary(modelo)
+```
+El R2 es cercano a 1 por lo que tenemos un buen modelo de prediccion.
+Observando el p- value de Ingreso y CalifCredit tiene una buena probabilidad 
+
+
+##5. ¿Qué error se obtiene sobre la tabla de testing para el modelo de regresión lineal? Interprete las medidas de error obtenidas.
+
+```{r}
+RSS <- function(Pred,Real) {
+  ss <- sum((Real-Pred)^2)
+  return(ss)
+}
+
+RSE<-function(Pred,Real,NumPred) {
+  N<-length(Real)-NumPred-1  # <- length(Real)-(NumPred+1)
+  ss<-sqrt((1/N)*RSS(Pred,Real))
+  return(ss)
+}
+
+MSE <- function(Pred,Real) {
+  N<-length(Real)
+  ss<-(1/N)*RSS(Pred,Real)
+  return(ss)
+}
+
+error.relativo <- function(Pred,Real) {
+  ss<-sum(abs(Real-Pred))/sum(abs(Real))
+  return(ss)
+}
+
+indices.precision <- function(real, prediccion,cantidad.variables.predictoras) {
+  return(list(error.cuadratico = MSE(prediccion,real),
+              raiz.error.cuadratico = RSE(prediccion,real,cantidad.variables.predictoras),
+              error.relativo = error.relativo(prediccion,real),
+              correlacion = as.numeric(cor(prediccion,real))))
+}
+
+numero.predictoras <- dim(DeudaCreditoCuantitativo)[2] - 1
+#Usando los datos del 80%
+
+modelo.lm <- lm(Balance~ ., data = Filter(is.numeric,ochentaPorcentaje)[,-1])
+modelo.lm
+
+prediccion <- predict(modelo.lm, Filter(is.numeric, veintePorcentaje)[,-1])
+
+pre.lm <- indices.precision(veintePorcentaje$Balance, prediccion, numero.predictoras)
+
+pre.lm
+```
+## 6. Si tuviera que eliminar alguna o algunas de las variables con la esperanza de que mejore la predicción ¿Cuál o cuáles de las variables eliminaría? ¿El nuevo modelo mejora la predicción?
+
+```{r}
+
+```
+
+# Pregunta 2: {.tabset .tabset-fade}
+Un cliente nos contrata para estudiar una posible oportunidad de negocio, y para ver si le es rentable quiere una predicci´on de las ventas potenciales de asientos de ni˜nos para autos en su tienda. Para ello hacemos uso de los datos AsientosNinno.csv los cual contienen detalles de ventas de asientos de ni˜nos para auto en una serie de tiendas similares a las del cliente, y adem´as los datos incluyen variables que definen caracter´ısticas de la tienda y su
+localidad.
+La tabla de datos est´a formada por 400 filas y 11 columnas. Seguidamente se explican las variables que conforman la tabla.
+• Ventas: Ventas de asientos de ni˜nos para autos en cada localidad, en miles de unidades.
+• PrecioCompt: Precio promedio por asiento de ni˜no cobrado por la competencia en cada
+localidad.
+• Ingreso: Nivel de ingreso promedio de los habitantes de la regi´on, en miles de d´olares.
+• Publicidad: Presupuesto que asigna cada tienda a publicidad, en miles de d´olares.
+• Poblacion: Tama˜no de la poblaci´on en cada regi´on, en miles.
+• Precio: Precio cobrado por la tienda por los asientos de ni˜no para auto.
+• CalidadEstant: Indica la calidad de ubicaci´on de los asientos de ni˜no en los estantes de
+la tienda.
+• Edad: Edad promedio de los habitantes de la localidad.
+• Educacion: A˜nos de educaci´on promedio de los habitantes de cada regi´on.
+• Urbano: Indica si la tienda est´a localizada en una zona urbana o no (1 = S´ı, 0 = No).
+• USA: Indica si la tienda est´a ubicada en Estados Unidos o no (1 = S´ı, 0 = No).
+
+Realice lo siguiente:
+
+## 1. Cargue la tabla de datos en R. En caso de ser necesario, recodificar las variables de forma adecuada. Seleccione la variable a predecir, y para medir el error tome un 15 % de la tabla de datos.
+
+En este caso Ventas sería la variable a predecir
+
+```{r}
+
+AsientosNinno <- read_delim("Datos_EjemplosClase_Tarea/AsientosNinno.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+
+azar <- sample(1:nrow(AsientosNinno), nrow(AsientosNinno)*0.85)
+
+ochentacincoPorcentaje <- AsientosNinno[azar,]
+
+quincePorcentaje <- AsientosNinno[-azar,]
+
+```
+
+##2.Realice un Análisis Exploratorio de los datos con todos los datos que incluya al menos:
+• summary(...).
+```{r}
+summary(AsientosNinno)
+```
+
+
+• La matriz de correlaciones y alguno de sus gráficos. Interprete al menos dos correlaciones.
+
+```{r}
+AsientosNinnoCuantitativo <- Filter(is.numeric,AsientosNinno)[,-1]
+
+matriz.correlaciones <- cor(AsientosNinnoCuantitativo)
+
+corrplot(matriz.correlaciones)
+
+ggpairs(AsientosNinnoCuantitativo)
+```
+
+• Encuentre al menos 3 datos atípicos, si es que existen en esta tabla de datos
+
+Las variables de Ventas, PrecioCompt y Precio tienen valores atípicos.
+```{r}
+lapply(AsientosNinnoCuantitativo,Boxplot)
+```
+##3. Aplique el modelo de regresi´on lineal m´ultiple incluyendo todas las variables predictoras.
+
+```{r}
+
+modelo <- lm(Ventas ~ . , data = AsientosNinnoCuantitativo)
+modelo
+
+summary(modelo)
+```
+##4. ¿Qué error se obtiene sobre la tabla de training para el modelo generado anteriormente?
+
+```{r}
+numero.predictoras <- dim(AsientosNinnoCuantitativo)[2] - 1
+
+#Usando los datos del 80%
+modelo.lm <- lm(Precio ~ ., data = Filter(is.numeric,ochentacincoPorcentaje)[,-1])
+modelo.lm
+
+prediccion <- predict(modelo.lm, Filter(is.numeric, quincePorcentaje)[,-1])
+
+pre.lm <- indices.precision(quincePorcentaje$Precio, prediccion, numero.predictoras)
+
+pre.lm
+```
+
+#Pregunta 3: {.tabset .tabset-fade}
+La Tabla de Datos uscrime.csv contiene el c´alculo de´ındice de cr´ımenes violentos por habitante en Estados Unidos, como son el asesinato, la violaci´on, el robo y asalto. Las variables incluidas son, entre otras, el porcentaje de la poblaci´on considerada urbana, la renta media de la familia, la participaci´on de las fuerzas del orden, el n´umero de polic´ıas per c´apita, el porcentaje de los oficiales asignados a las unidades de la droga. La variable a predecir es ViolentCrimesPerPop (Per Capita Violent Crimes in US). Usando un 67 % de esta tabla para Tabla de Aprendizaje y el restante 33 % para Tabla de Testing efectue lo siguiente:
+
+##1. Realice un Análisis Exploratorio de los datos con todos los datos.
+```{r}
+uscrime <- read_csv("Datos_EjemplosClase_Tarea/uscrime.csv")
+
+uscrimeCuantitativas <- Filter(is.numeric, uscrime)
+
+azar2 <- sample(1:nrow(uscrime), nrow(uscrime)*0.67)
+
+aprendizajeUscrime <- uscrime[azar2,]
+pruebaUscrime <- uscrime[-azar2,]
+
+matriz.corrA <- cor(aprendizajeUscrime)
+matriz.corrP <- cor(pruebaUscrime)
+
+corrplot(matriz.corrA)
+corrplot(matriz.corrP)
+```
+
+
+```{r}
+modelo.predictivo <- lm(ViolentCrimesPerPop~ . , data = aprendizajeUscrime)
+modelo.predictivo
+
+numero.predictoras <- dim(uscrimeCuantitativas)[2] - 1
+
+#Usando los datos del 80%
+modelo.lm <- lm(ViolentCrimesPerPop~ ., data = Filter(is.numeric,ochentacincoPorcentaje)[,-1])
+modelo.lm
+
+prediccion <- predict(modelo.lm, Filter(is.numeric, quincePorcentaje)[,-1])
+
+pre.lm <- indices.precision(quincePorcentaje$Precio, prediccion, numero.predictoras)
+
+pre.lm
 
 ```
 
