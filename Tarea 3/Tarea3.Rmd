@@ -91,5 +91,7 @@ ggpairs(DeudaCreditoCuantitativo)
 
 ```{r}
 
+gg
+geom_boxplot()
 ```
 
