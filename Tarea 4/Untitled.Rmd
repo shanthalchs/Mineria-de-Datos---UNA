@@ -1,0 +1,68 @@
+---
+title: "Tarea 4"
+author: "Shanthal Chavarría"
+date: "8/26/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	             cache=FALSE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+```
+
+
+#Pregunta 1 {.tabset .tabset-fade}
+
+En este ejercicio vamos a usar la tabla de datos SpotifyTop2018 40 V2.csv, que contiene una lista de 40 de las canciones más reproducidas en Spotify en el año 2018. Los datos incluyen una serie de características importantes del audio de cada canción. \n
+La tabla contiene 40 filas y 11 columnas, las cuales se explican a continuación. \n
+danceability: Describe qué tan apta para bailar es la canción \n
+denergy: Representa una medida de intensidad y actividad. \n
+dloudness: Sonoridad general de la pista en decibelios. \n
+dspeechiness: Detecta la presencia de palabras en la canción. \n
+dacousticness: Indica qué tan acústica es la canción. \n
+dinstrumentalness: Indica si la canción contiene o no voces. \n
+dliveness: Detecta la presencia de público en la grabación. \n
+dvalence: Describe la positividad musical transmitida por la canción. \n
+dtempo: Es el tempo estimado general de una pista en beats por minuto. \n
+dduration ms: Es la duración de la canción en milisegundos. \n
+dtime signature: Especifica cuántos beats hay en cada barra o medida. \n
+Nota: Todas son variables numéricas y no tienen NAs. Realice lo siguiente: \n
+
+```{r}
+library(readr)
+
+SpotifyTop2018_40_V2 <- read.table("Datos de la Presentación y para la Tarea/SpotifyTop2018_40_V2.csv", row.names = 1, header = TRUE, sep = ",", dec = ".")
+```
+
+## a) Calcule el resumen numérico, interprete los resultados para dos variables.
+```{r}
+summary(SpotifyTop2018_40_V2)
+```
+
+Duration _ms: La canción más larga dura 191.70 milisegundos y la más corta 77 milisegundos.
+Time signature: La canción con más beats cuenta con 268867 y con 95467 la que tiene menos.
+
+## b) Realice el test de normalidad para una variable e interprete el resultado
+
+```{r}
+promedio <- mean(SpotifyTop2018_40_V2$valence) 
+desviacion <- sd(SpotifyTop2018_40_V2$valence) 
+values <- dnorm( SpotifyTop2018_40_V2$valence, mean = promedio, sd = desviacion) 
+values <- c(values, hist(SpotifyTop2018_40_V2$valence,  plot = F)$density) 
+hist(SpotifyTop2018_40_V2$valence, col = '#00FF22AA', border=F, axes=F,
+  freq = F, ylim = range(0, max(values)), ylab = '', 
+  main = 'Spotify Top 2018', xlab = "valence") 
+axis(1, col=par('bg'), col.ticks='grey81', lwd.ticks=1, tck=-0.025) 
+axis(2, col=par('bg'), col.ticks='grey81', lwd.ticks=1, tck=-0.025) 
+curve(dnorm(x, mean = promedio, sd = desviacion), add=T, col='black', lwd=2)
+legend('right', legend = 'Curva Normal', col = 'black', lty=1, cex=.5)
+```
+
