@@ -68,6 +68,7 @@ Cargue la tabla de datos en R y asegúrese que las variables se están leyendo d
 
 ```{r}
 library(dummies)
+
 azar <- sample(1:nrow(DeudaCredito), nrow(DeudaCredito)*0.8)
 
 DeudaCreditoCuantitativo <- dummy.data.frame(DeudaCredito, sep = ".")[,-1]
