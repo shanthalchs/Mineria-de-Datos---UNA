@@ -21,9 +21,7 @@ opts_chunk$set(echo=TRUE,
                tidy=TRUE,
                comment=NA,
                message=FALSE,
-               warning=FALSE,
-               fig.width = 4,
-               fig.height = 4)
+               warning=FALSE)
 ```
 
 
@@ -111,7 +109,7 @@ boxplot(SpotifyTop2018_40_V2$instrumentalness, plot = F)$out
 ```
 ## e) Calcule la matriz de correlaciones, incluya alguna de las imágenes que ofrece R e interpréte dos de las correlaciones. Debe ser una interpretación dirigida a una persona que no sabe nada de estadística.
 
-```{r,fig.height = 8, fig.width = 12}
+```{r,fig.height = 2, fig.width = 2}
 library(corrplot)
 library(ellipse)
 
@@ -121,6 +119,8 @@ matriz.correlaciones
 corrplot(matriz.correlaciones)
 plotcorr(matriz.correlaciones, col = "red")
 ```
+Según el gráfico de correlaciones, las canciones con positividad músical (valance) también son bastante bailables (danceability), enérgicas y bulliciosas. Sin embargo tienen un tempo menor y una duración más corta.
+
 
 ## f) Efectúe un ACP y dé una interpretación siguiendo los siguientes pasos:
 
@@ -137,15 +137,15 @@ En el círculo de correlación determine la correlación entre las variables.
 ```{r, fig.height= 4, fig.width= 8}
 plot(res, axes=c(1, 2), choix="var", col.var="blue",new.plot=TRUE)
 ```
-
+En el círculo de correlación es más claro que las variables loudness y energy se relacionan positivamente. También se aprecia que las canciones con más instrumental tienen mayor duración, pero son opuestas a la bailabilidad, palabras en la canción y positividad.
 
 
 Explique la formación de los clústeres basado en la sobreposición del círculo y el plano.
 
-```{r, fig.height= 4, fig.width= 4}
+```{r, fig.height= 2, fig.width= 2}
 fviz_pca_biplot(res,col.var = "#2E9FDF",col.ind = "#696969")
 ```
-Basado en el gráfico, en el cuarto cuadrante se agruparon las cancionen que compartían duración, acústica y bailabilidad, esto opuesto al primero que posee las canciones con más durabilidad, instrumental y público en la grabación. El segundo cuadrante tiene las canciones con más energía y bulla, contrario al tercer cuadrante compuesto de canciones de tonos bajos y nostálgicos. 
+Basado en el gráfico, en el cuarto cuadrante se agruparon las cancionen que  compartían duración, acústica y bailabilidad, esto opuesto al primero que posee las canciones con más durabilidad, instrumental y público en la grabación. El segundo cuadrante tiene las canciones con más energía y bulla, contrario al tercer cuadrante compuesto de canciones de tonos bajos y nostálgicos. 
 
 \· En el plano de los componentes 1 y 3 interprete las canciones In My Feelings, In My Mind, Havana, Candy Paint y HUMBLE, que son mal representadas en los componentes 1 y 2.
 
@@ -186,7 +186,7 @@ matriz.correlaciones2
 corrplot(matriz.correlaciones2)
 
 ```
-Según el gráfico de la matriz de correlaciones el tiempo de infidelidad aumenta si las personas indican ser religiosas. Por otro lado, si llevan muchos años de casados el tiempo siendo infieles crece.
+Según el gráfico de la matriz de correlaciones el tiempo de infidelidad aumenta si las personas indican ser religiosas. Por otro lado, si llevan muchos años de casados el tiempo siendo infieles crece. También parece ser que las personas religiosas llevan más tiempo casadas. 
 
 ## c) Usando solo las variables numéricas efectué un ACP y dé una interpretación siguiendo los siguientes pasos: 
 1) en el plano principal encuentre 4 clústeres. \n
@@ -195,28 +195,35 @@ Según el gráfico de la matriz de correlaciones el tiempo de infidelidad aument
 knitr::include_graphics("Captura de Pantalla 2020-08-28 a la(s) 11.38.44.png")
 ```
 
+
 2) en el círculo de correlación determine la correlación entre las variables. \n
 
-```{r, fig.height= 4, fig.width= 4}
+```{r, fig.height= 2, fig.width= 2}
 modelo <- PCA(TablaAffairsCuantit, scale.unit=TRUE, ncp=5, graph = FALSE)
 
 plot(modelo, axes=c(1, 2), choix="var", col.var="red", new.plot=TRUE)
 ```
+Las variables de Educación y ocupación relacionan positivamente. \n
+Tiene sentido que la Edad y los Años Casados tengan una relación fuerte y positiva; aunque no estén bien representadas Religioso y Tiempo de Infidelidad se relacionan positivamente con estas también.
 
-
-3) explique la formación de los clústeres basado en la sobre-posición del círculo y el plano.
+3) Explique la formación de los clústeres basado en la sobre-posición del círculo y el plano.
 
 ```{r, fig.height= 4, fig.width= 4}
 fviz_pca_biplot(modelo, col.var = "#2E9FDF",col.ind = "#696969")
 ```
+Según el gráfico anterior, parece que el mayor número de personas que cometió infidelidad lo hizo por poco tiempo, eran de edades no avanzadas, no religiosos y con pocos años casados. Su educación parece ser indiferente para este grupo, hay otro grupo con Educación y Trabajando que también concentra una cantidad importante que no se relaciona con ninguna de las demás variables.
+
+
 ## d) Ahora convierta las variables Género e Hijos en Código Disyuntivo Completo y repita el ACP ¿Se gana interpretabilidad al convetir Género e Hijos en Código Disyuntivo Completo? 
-```{r}
+```{r, fig.height= 4, fig.width= 4}
 library(dummies)
 TablaAffairs1 <- dummy.data.frame(TablaAffairs)
 
 modelo1 <- PCA(TablaAffairs1, scale.unit=TRUE, ncp=5, graph = FALSE)
+
+fviz_pca_biplot(modelo1, col.var = "#2E9FDF",col.ind = "#696969")
 ```
-Si, basado en el gráfico de relaciones, parece ser que las personas que se consideran felices en la relación no llevan mucho tiempo de casadas y su tiempo siendo infieles es menor, además no tienen hijos. Las personas que indicaron que se sentían infelices muestran todo lo contrario.
+Si, parece ser que las personas que se consideran felices en la relación no llevan mucho tiempo de casadas y su tiempo siendo infieles es menor, además no tienen hijos. Las personas que indicaron que se sentían infelices muestran todo lo contrario. El género parece ser independiente del tiempo de infidelidad o de si son felices. 
 
 # Pregunta 3.  {.tabset .tabset-fade}
 En este ejercicio vamos a realizar un ACP para la tabla SAheart.csv la cual contiene variables numéricas y categóicas mezcladas. La descripción de los datos es la siguiente: \n
@@ -252,13 +259,17 @@ En el círculo de correlación determine la correlación entre las variables.
 ```{r, fig.height= 4, fig.width=4}
 plot(modelo, axes=c(1, 2), choix="var", col.var="orange", new.plot=TRUE)
 ```
-
+Según el plano principal, las variables que indican el consumo de drogas tienen una relación fuerte y positiva entre si y con la edad. Por otro lado, se relacionan negativamente con el comportamiento type-A. \n
+Las variables que indican las condiciones de salud, como el colesterol, obesidad y la presión arterial, no parecen  relacionarse con el consumo de drogas ni el comportamiento de la persona. \n \n
 
 Explique la formación de los clústeres basado en la sobre-posición del círculo y el plano.
 
 ```{r, fig.height= 4, fig.width= 4}
 fviz_pca_biplot(modelo, col.var = "#2E9FDF",col.ind = "#696969")
 ```
+
+No se puede decir mucho del primer y tercer cuadrante más que estos dos no se relacionan de ninguna forma y no se conoce el porqué se agrupan. El segundo y el cuarto comprenden las variables observadas y tiene un similar número de observaciones que los demás cuadrantes. Y por el inciso anterior, sabemos que tienen en común.
+
 
 ## b) Efectúe un ACP usando las variables numéricas y las variables categóricas (recuerde recodificar las categóricas usando código disyuntivo completo). Luego dé una interpretación siguiendo los siguientes pasos:
 
@@ -280,12 +291,18 @@ En el círculo de correlación determine la correlación entre las variables.
 ```{r}
 plot(modelo1, axes=c(1, 2), choix="var", col.var="darkgreen", new.plot=TRUE)
 ```
+En el plano principal es mucho más claro que aqui sí se relacionan directamente las variables que indican consumo de de drogas y malas condiones de salud, sin embargo estas no parecen tener relación con que padezcan una enfermedad cardiaca. Más bien, el historial familiar si está directamente relacionado con llegar a padecerla, también parece ser que aunque no esté bien representado, el tipo A de comportamniento también se relaciona positivamente con este. \n
+La ausencia de enfermedades en la familia se relaciona de manera fuerte y positiva con la ausencia de enfermedades en el corazón.
+
 
 
 Explique la formación de los clústeres basado en la sobre-posición del círculo y el plano.
 ```{r}
 fviz_pca_biplot(modelo1, col.var = "#2E9FDF",col.ind = "#696969")
 ```
+Este explica por 
+
+\n \n 
 
 Explique las diferencias de este ACP respecto al anterior (usando solo las variables numéricas. ¿Cúal le parece más interesante? ¿Por qué?
 
