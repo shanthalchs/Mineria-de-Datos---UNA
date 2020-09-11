@@ -1,0 +1,198 @@
+---
+title: "Tarea 5 Minería de Datos"
+author: "Shanthal Chavarría"
+date: "9/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r setup, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=FALSE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+```
+
+
+#Pregunta 1 {.tabset .tabset-fade}
+
+En este ejercicio usaremos la tabla de datos EjemploAlgoritmosRecomendación.csv, la cual contiene los promedios de evaluación de 100 personas que adquirieron los mismos productos o muy similares en la tienda AMAZON. La idea consiste en recomendar a un cliente los productos que ha comprado otra persona que pertenece al mismo clúster.
+
+```{r}
+library(readr)
+EjemploAlgoritmosRecomendacion <- read.table("../Tarea 5/DatosTarea/EjemploAlgoritmosRecomendacion.csv", sep = ";", dec = ",", header = TRUE, row.names = 1)
+```
+
+## a) 
+Ejecute el método k−medias con iter.max = 200, nstart = 100 para k = 4, luego desde RStudio verifique el Teorema de Fisher para este ejemplo.
+
+```{r}
+grupos <- kmeans(EjemploAlgoritmosRecomendacion,centers=4,iter.max=200,nstart = 100) 
+
+# Verificación del Teorema de Fisher
+grupos$totss==grupos$tot.withinss+grupos$betweenss     
+```
+
+
+
+## b) {.tabset .tabset-fade}
+Ejecute el método k−medias con iter.max = 200, nstart = 100 , para esto encuentre valor de k usando los métodos Gap Statistic, wss y Average Silhouette usando la función fviz nbclust, luego interprete los resultados usando interpretación Horizontal-Vertical y gráficos tipo radar plot.
+
+```{r}
+library(factoextra)
+
+mis.datos <- scale(EjemploAlgoritmosRecomendacion)
+
+```
+
+### Gap Statistic
+```{r}
+fviz_nbclust(mis.datos, kmeans, method = "gap_stat")
+```
+
+### WSS
+```{r}
+fviz_nbclust(mis.datos, kmeans, method = "wss")
+```
+
+### Average Silhouette
+```{r}
+fviz_nbclust(mis.datos, kmeans, method = "silhouette")
+```
+
+### 
+```{r}
+library(fmsb)
+# Gráfico Tipo Araña
+centros<-grupos$centers
+rownames(centros)<-c("Cluster 1","Cluster 2","Cluster 3","Cluster 4")
+centros<-as.data.frame(centros)
+maximos<-apply(centros,2,max)
+minimos<-apply(centros,2,min)
+centros<-rbind(minimos,centros)
+centros<-rbind(maximos,centros)
+color <- c("red","blue","yellow","green")
+radarchart(as.data.frame(centros),maxmin=TRUE,axistype=4,axislabcol="slategray4",
+             centerzero=FALSE,seg=8, cglcol="gray67",
+             pcol=color,plty=1,plwd=5,title="Comparación de clústeres")
+legenda <-legend(1.5,1, legend=c("Cluster 1","Cluster 2","Cluster 3","Cluster 4"),
+                seg.len=-1.4,title="Clústeres",pch=21,bty="n" ,lwd=3, y.intersp=1, 
+                horiz=FALSE,col=color)
+```
+
+## c) 
+Si se tienen 7 clústeres usando el método de k-medias ¿Qué productos recomendaría a Teresa, a Leo y a Justin?, es decir, ¿los productos que compra cúal otro cliente? Usando distancia euclídea ¿cúal es la mejor recomendación de compra que le podemos hacer a Teresa, a Leo y a Justin?
+
+```{r}
+grupos1 <- kmeans(dist(EjemploAlgoritmosRecomendacion, method = "euclidean"),centers=7,iter.max=200,nstart = 100)
+grupos1$cluster
+```
+Teresa esta en el cluster 1, por lo que le recomendaría los productos de Adam. Leo en el cluster 6, le recomendaría los productos de Susanna. Y Justin en el 4 con Larissa.
+
+## d)
+Construya un clustering jerárquico sobre las componentes principales del ACP.
+```{r}
+library(factoextra)
+library(FactoMineR)
+
+res  <- PCA(EjemploAlgoritmosRecomendacion , scale.unit=TRUE, ncp=5, graph = FALSE)
+
+res.hcpc <- HCPC(res, nb.clust = -1, consol = TRUE, min = 3, max = 3, graph = FALSE)
+
+plot.HCPC(res.hcpc, choice="3D.map", angle=60)
+```
+
+# Pregunta 2 {.tabset .tabset-fade}
+El conjunto de datos DatosBeijing.csv contiene datos por hora de la concentración de la partícula PM2.5 en la ciudad de Beijing, también incluye datos meteorológicos del Aeropuerto Internacional de Beijing. Contiene un Id y 12 variables que se explican seguidamente: \n
+
+Id: Número de fila.  \n
+Anno: Año de datos en esta fila. \n
+Mes: Mes de datos en esta fila.  \n
+Dia: Día de datos en esta fila. \n
+Hora: Hora de datos en esta fila.  \n
+ConcetracionParticula pm2.5: Concentración de PM2.5. PuntoRocio: Punto de rocío. \n
+Temperatura: Temperatura.  \n
+Presion: Presión (hPa). \n
+DireccionViento: Dirección del viento combinado.  \n
+VelocidadViento: Velocidad del viento acumulada.  \n
+HorasNieve: Horas acumuladas de nieve.  \n
+HorasLluvia: Horas acumuladas de lluvia.  \n
+Efectúe un análisis de k-medias siguiendo los siguientes pasos:
+
+## a) 
+Cargue la tabla de datos y ejecute un str(...), summary(...) y un dim(...), verifique la correcta lectura de los datos.
+```{r}
+DatosBeijing <- read.table("DatosBeijing.csv", sep = ",", dec = ".", header = TRUE)
+
+str(DatosBeijing)
+
+summary(DatosBeijing)
+
+dim(DatosBeijing)
+
+
+```
+
+## b)
+Elimine las filas con NA usando el comando na.omit(...). ¿Cúantas filas de eliminaron?
+```{r}
+DatosBeijing1 <- na.omit(DatosBeijing)
+
+dim(DatosBeijing)[1] - dim(DatosBeijing1)[1] #filas eliminadas
+```
+## c)
+Elimine de la tabla de datos la variable DireccionViento. ¿Por qué se debe eliminar? ¿Qué otra alternativa se tiene en lugar de eliminarla?
+```{r}
+DatosBeijing1 <- DatosBeijing1[,-10] 
+
+```
+## d)
+¿Qué pasa si ejecutamos un clustering jerárquico con hclust(...). ¿Por qué sucede esto?  
+
+```{r}
+modelo <- hclust(DatosBeijing1)
+```
+Sucede un error, por que los datos exceden los 65536
+## e)
+Ejecute un k-medias con k = 3, iter.max=1000 y nstart=50.
+```{r}
+Grupos <- kmeans(DatosBeijing1,centers=3,iter.max=1000,nstart = 50)
+```
+## f)
+Dé una interpretación de los resultados usando un gráfico tipo radar.
+```{r}
+centros1<-Grupos$centers
+rownames(centros1)<-c("Cluster 1","Cluster 2","Cluster 3")
+centros1<-as.data.frame(centros1)
+maximos1<-apply(centros1,2,max)
+minimos1<-apply(centros1,2,min)
+centros1<-rbind(minimos1,centros1)
+centros1<-rbind(maximos1,centros1)
+color <- c("red","blue","yellow")
+radarchart(as.data.frame(centros1),maxmin=TRUE,axistype=4,axislabcol="slategray4",
+             centerzero=FALSE,seg=8, cglcol="gray67",
+             pcol=color,plty=1,plwd=5,title="Comparación de clústeres")
+legenda <-legend(1.5,1, legend=c("Cluster 1","Cluster 2","Cluster 3"),
+                seg.len=-1.4,title="Clústeres",pch=21,bty="n" ,lwd=3, y.intersp=1, 
+                horiz=FALSE,col=color)
+```
+## g)
+
+Construya el Codo de Jambu usando iter.max=100 y nstart=5, ¿cúantos conglomerados (clústeres) sugiere el codo? Utilice también el método silhouette de la función fviz nbclust, ¿cúantos conglomerados (clústeres) sugiere este método?
+```{r}
+
+```
+
