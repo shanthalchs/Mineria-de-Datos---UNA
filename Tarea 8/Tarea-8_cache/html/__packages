@@ -1,0 +1,10 @@
+base
+knitr
+rmdformats
+lattice
+ggplot2
+caret
+readr
+traineR
+plotly
+pracma
