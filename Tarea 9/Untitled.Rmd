@@ -1,0 +1,69 @@
+---
+title: "Tarea 9"
+author: "Shantal Chavarría"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::material:
+    highlight: kate
+---
+
+
+```{r setup, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+```
+
+# Pregunta 1 {.tabset .tabset-fade}
+[30 puntos] En esta pregunta utiliza los datos (tumores.csv). Se trata de un conjunto de datos de características del tumor cerebral que incluye cinco variables de primer orden y ocho de textura y cuatro parámetros de evaluación de la calidad con el nivel objetivo. La variables son: Media, Varianza, Desviación estándar, Asimetría, Kurtosis, Contraste, Energía, ASM (segundo momento angular), Entropía, Homogeneidad, Disimilitud, Correlación, Grosor, PSNR (Pico de la relación señal-ruido),  SSIM (Indice de Similitud Estructurada), MSE (Mean Square Error), DC (Coeficiente de Dados) y la variable a predecir tipo (1 = Tumor, 0 = No-Tumor).
+Realice lo siguiente:
+## 1.
+Cargue la tabla de datos tumores.csv en R y genere en R usando la función createDataPartition(...) del paquete caret la tabla de testing con una 25 % de los datos y con el resto de los datos genere una tabla de aprendizaje.
+
+```{r}
+library(readr)
+library(caret)
+library(traineR)
+library(rpart)
+library(rpart.plot)
+
+
+tumores <- read.table("Datos Tarea/tumores.csv", sep = ",", dec = ".", header = TRUE)[,-1]
+
+tumores$tipo <- as.factor(ifelse(tumores$tipo ==1, "SI", "NO"))
+
+p <- createDataPartition(tumores$tipo, p = 0.25, list = FALSE)
+
+ttesting <- tumores[p,]
+taprendizaje <- tumores[-p,]
+```
+
+## 2. 
+Usando árboles de Decisión (con traineR) genere un modelo predictivo para la tabla de aprendizaje. Modifique los parámetros del árbol de decisión para lograr los mejores resultados posibles. Grafique el árbol obtenido.
+
+```{r}
+
+modelo <- rpart(tipo~.,taprendizaje, minsplit=20, maxdepth = 4)
+
+prediccion <- predict(modelo, ttesting, type = "class")
+
+prp(modelo,extra=104,branch.type=2, box.col=c("pink", "palegreen3","cyan")[modelo$frame$yval])
+```
+
+## 3.
+Construya una tabla para los índices anteriores que permita comparar el resultado de los árboles de Decisión con respecto a los métodos generados en las tareas anteriores ¿Cúal método es mejor?
+
+```{r}
+
+```
+
