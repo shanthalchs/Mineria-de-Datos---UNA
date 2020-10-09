@@ -208,7 +208,7 @@ indices.general <- function(MC) {
                   "Precisión por categoría","Falsos positivos","Falsos negativos","Asertividad Positiva", "Asertvidad Negativa")
   return(res)
 }
-
+indices.general(mc.polynomial)
 ```
 La función parece indicar que el mejor método fue el polynomial, sin embargo tiene una precision global muy baja para poder considerarse un buen modelo de predicción.
 
