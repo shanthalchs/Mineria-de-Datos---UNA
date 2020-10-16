@@ -1,0 +1,11 @@
+base
+knitr
+rmdformats
+readr
+lattice
+ggplot2
+caret
+traineR
+rpart
+rpart.plot
+dplyr
