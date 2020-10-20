@@ -83,6 +83,7 @@ indices.general <- function(MC) {
 }
 
 MC.AD <-  confusion.matrix(newdata = ttesting, prediccion)
+MC.AD
 
 ```
 
@@ -226,6 +227,8 @@ tablaComparativa
 #Mejor Método basados en su Precisión Global
 tablaComparativa%>%
   filter(Precisión.Global ==  max(Precisión.Global))
+
+write.csv(tablaComparativa,"Tabla Comparativa tumores.csv", row.names = FALSE)
 
 ```
 Seleccionando el método con mayor Precisión Global Arboles de Decisión sería el de mejor resultados.
@@ -422,6 +425,8 @@ tablaComparativa
 #Mejor Método basado en su Precisión Global
 tablaComparativa%>%
   filter(Precisión.Global ==  max(Precisión.Global))
+
+write.csv(tablaComparativa,"Tabla Comparativa titanic.csv", row.names = FALSE)
 
 ```
 
@@ -622,6 +627,8 @@ tablaComparativa
 #Mejor Método basado en su Precisión Global
 tablaComparativa%>%
   filter(Precisión.Global ==  max(Precisión.Global))
+
+write.csv(tablaComparativa,"Tabla Comparativa ZipData.csv", row.names = FALSE)
 ```
 
 # Pregunta 4 {.tabset .tabset-fade}
