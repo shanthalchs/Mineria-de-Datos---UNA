@@ -2,6 +2,7 @@
 title: "Tarea 8 Minería de Datos UNA"
 author: "Shanthal Chavarría"
 date: "`r Sys.Date()`"
+df_print: "paged"
 output:
   rmdformats::material:
     highlight: kate
@@ -45,6 +46,7 @@ p <- createDataPartition(tumores$tipo,p = 0.25, list = FALSE)
 
 ttesting <- tumores[p,]
 taprendizaje <- tumores[-p,]
+tumores
 ```
 
 ## 2. 
