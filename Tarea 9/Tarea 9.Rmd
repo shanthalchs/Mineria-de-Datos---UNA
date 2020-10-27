@@ -593,29 +593,149 @@ indices12 <- indices.general(MC.sigmoid)
 
 
 
-indices1$`Precisión por categoría`<-sprintf("%f,%f", indices1$`Precisión por categoría`[1], indices1$`Precisión por categoría`[2])
+indices1$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices1$`Precisión por categoría`[1],
+                                            indices1$`Precisión por categoría`[2],
+                                            indices1$`Precisión por categoría`[3],
+                                            indices1$`Precisión por categoría`[4],
+                                            indices1$`Precisión por categoría`[5],
+                                            indices1$`Precisión por categoría`[6],
+                                            indices1$`Precisión por categoría`[7],
+                                            indices1$`Precisión por categoría`[8],
+                                            indices1$`Precisión por categoría`[9],
+                                            indices1$`Precisión por categoría`[10])
 
-indices2$`Precisión por categoría`<-sprintf("%f,%f", indices2$`Precisión por categoría`[1], indices2$`Precisión por categoría`[2])
+indices2$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices2$`Precisión por categoría`[1],
+                                            indices2$`Precisión por categoría`[2],
+                                            indices2$`Precisión por categoría`[3],
+                                            indices2$`Precisión por categoría`[4],
+                                            indices2$`Precisión por categoría`[5],
+                                            indices2$`Precisión por categoría`[6],
+                                            indices2$`Precisión por categoría`[7],
+                                            indices2$`Precisión por categoría`[8],
+                                            indices2$`Precisión por categoría`[9],
+                                            indices2$`Precisión por categoría`[10])
 
-indices3$`Precisión por categoría`<-sprintf("%f,%f", indices3$`Precisión por categoría`[1], indices3$`Precisión por categoría`[2])
+indices3$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices3$`Precisión por categoría`[1],
+                                            indices3$`Precisión por categoría`[2],
+                                            indices3$`Precisión por categoría`[3],
+                                            indices3$`Precisión por categoría`[4],
+                                            indices3$`Precisión por categoría`[5],
+                                            indices3$`Precisión por categoría`[6],
+                                            indices3$`Precisión por categoría`[7],
+                                            indices3$`Precisión por categoría`[8],
+                                            indices3$`Precisión por categoría`[9],
+                                            indices3$`Precisión por categoría`[10])
 
-indices4$`Precisión por categoría`<-sprintf("%f,%f", indices4$`Precisión por categoría`[1], indices4$`Precisión por categoría`[2])
+indices4$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices4$`Precisión por categoría`[1],
+                                            indices4$`Precisión por categoría`[2],
+                                            indices4$`Precisión por categoría`[3],
+                                            indices4$`Precisión por categoría`[4],
+                                            indices4$`Precisión por categoría`[5],
+                                            indices4$`Precisión por categoría`[6],
+                                            indices4$`Precisión por categoría`[7],
+                                            indices4$`Precisión por categoría`[8],
+                                            indices4$`Precisión por categoría`[9],
+                                            indices4$`Precisión por categoría`[10])
 
-indices5$`Precisión por categoría`<-sprintf("%f,%f", indices5$`Precisión por categoría`[1], indices5$`Precisión por categoría`[2])
+indices5$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices5$`Precisión por categoría`[1],
+                                            indices5$`Precisión por categoría`[2],
+                                            indices5$`Precisión por categoría`[3],
+                                            indices5$`Precisión por categoría`[4],
+                                            indices5$`Precisión por categoría`[5],
+                                            indices5$`Precisión por categoría`[6],
+                                            indices5$`Precisión por categoría`[7],
+                                            indices5$`Precisión por categoría`[8],
+                                            indices5$`Precisión por categoría`[9],
+                                            indices5$`Precisión por categoría`[10])
 
-indices6$`Precisión por categoría`<-sprintf("%f,%f", indices6$`Precisión por categoría`[1], indices6$`Precisión por categoría`[2])
+indices6$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices6$`Precisión por categoría`[1],
+                                            indices6$`Precisión por categoría`[2],
+                                            indices6$`Precisión por categoría`[3],
+                                            indices6$`Precisión por categoría`[4],
+                                            indices6$`Precisión por categoría`[5],
+                                            indices6$`Precisión por categoría`[6],
+                                            indices6$`Precisión por categoría`[7],
+                                            indices6$`Precisión por categoría`[8],
+                                            indices6$`Precisión por categoría`[9],
+                                            indices6$`Precisión por categoría`[10])
 
-indices7$`Precisión por categoría`<-sprintf("%f,%f", indices7$`Precisión por categoría`[1], indices7$`Precisión por categoría`[2])
+indices7$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices7$`Precisión por categoría`[1],
+                                            indices7$`Precisión por categoría`[2],
+                                            indices7$`Precisión por categoría`[3],
+                                            indices7$`Precisión por categoría`[4],
+                                            indices7$`Precisión por categoría`[5],
+                                            indices7$`Precisión por categoría`[6],
+                                            indices7$`Precisión por categoría`[7],
+                                            indices7$`Precisión por categoría`[8],
+                                            indices7$`Precisión por categoría`[9],
+                                            indices7$`Precisión por categoría`[10])
 
-indices8$`Precisión por categoría`<-sprintf("%f,%f", indices8$`Precisión por categoría`[1], indices8$`Precisión por categoría`[2])
+indices8$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices8$`Precisión por categoría`[1],
+                                            indices8$`Precisión por categoría`[2],
+                                            indices8$`Precisión por categoría`[3],
+                                            indices8$`Precisión por categoría`[4],
+                                            indices8$`Precisión por categoría`[5],
+                                            indices8$`Precisión por categoría`[6],
+                                            indices8$`Precisión por categoría`[7],
+                                            indices8$`Precisión por categoría`[8],
+                                            indices8$`Precisión por categoría`[9],
+                                            indices8$`Precisión por categoría`[10])
 
-indices9$`Precisión por categoría`<-sprintf("%f,%f", indices9$`Precisión por categoría`[1], indices9$`Precisión por categoría`[2])
+indices9$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices9$`Precisión por categoría`[1],
+                                            indices9$`Precisión por categoría`[2],
+                                            indices9$`Precisión por categoría`[3],
+                                            indices9$`Precisión por categoría`[4],
+                                            indices9$`Precisión por categoría`[5],
+                                            indices9$`Precisión por categoría`[6],
+                                            indices9$`Precisión por categoría`[7],
+                                            indices9$`Precisión por categoría`[8],
+                                            indices9$`Precisión por categoría`[9],
+                                            indices9$`Precisión por categoría`[10])
 
-indices10$`Precisión por categoría`<-sprintf("%f,%f", indices10$`Precisión por categoría`[1], indices10$`Precisión por categoría`[2])
+indices10$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices10$`Precisión por categoría`[1],
+                                            indices10$`Precisión por categoría`[2],
+                                            indices10$`Precisión por categoría`[3],
+                                            indices10$`Precisión por categoría`[4],
+                                            indices10$`Precisión por categoría`[5],
+                                            indices10$`Precisión por categoría`[6],
+                                            indices10$`Precisión por categoría`[7],
+                                            indices10$`Precisión por categoría`[8],
+                                            indices10$`Precisión por categoría`[9],
+                                            indices10$`Precisión por categoría`[10])
 
-indices11$`Precisión por categoría`<-sprintf("%f,%f", indices11$`Precisión por categoría`[1], indices11$`Precisión por categoría`[2])
+indices11$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices11$`Precisión por categoría`[1],
+                                            indices11$`Precisión por categoría`[2],
+                                            indices11$`Precisión por categoría`[3],
+                                            indices11$`Precisión por categoría`[4],
+                                            indices11$`Precisión por categoría`[5],
+                                            indices11$`Precisión por categoría`[6],
+                                            indices11$`Precisión por categoría`[7],
+                                            indices11$`Precisión por categoría`[8],
+                                            indices11$`Precisión por categoría`[9],
+                                            indices11$`Precisión por categoría`[10])
 
-indices12$`Precisión por categoría`<-sprintf("%f,%f", indices12$`Precisión por categoría`[1], indices12$`Precisión por categoría`[2])
+indices12$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices12$`Precisión por categoría`[1],
+                                            indices12$`Precisión por categoría`[2],
+                                            indices12$`Precisión por categoría`[3],
+                                            indices12$`Precisión por categoría`[4],
+                                            indices12$`Precisión por categoría`[5],
+                                            indices12$`Precisión por categoría`[6],
+                                            indices12$`Precisión por categoría`[7],
+                                            indices12$`Precisión por categoría`[8],
+                                            indices12$`Precisión por categoría`[9],
+                                            indices12$`Precisión por categoría`[10])
 
 
 tablaComparativa <-  rbind(as.data.frame(indices1),as.data.frame(indices2),as.data.frame(indices3),as.data.frame(indices4),as.data.frame(indices5),as.data.frame(indices6),as.data.frame(indices7),as.data.frame(indices8),as.data.frame(indices9),as.data.frame(indices10),as.data.frame(indices11),as.data.frame(indices12)) 
