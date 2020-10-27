@@ -151,6 +151,9 @@ tablaComparativa
 #Mejor método segun precisión global
 tablaComparativa%>%
   filter(Precisión.Global ==  max(Precisión.Global))
+
+write.csv(tablaComparativa,"Tabla Comparativa tumores2.csv", row.names = FALSE)
+
 ```
 
 # Pregunta 2: {.tabset .tabset-fade}
@@ -268,6 +271,9 @@ tablaComparativa
 #Mejor método segun precisión global
 tablaComparativa%>%
   filter(Precisión.Global ==  max(Precisión.Global))
+
+write.csv(tablaComparativa,"Tabla Comparativa titanic2.csv", row.names = FALSE)
+
 ```
 
 # Pregunta 3  {.tabset .tabset-fade}
@@ -309,7 +315,7 @@ modelo.RF <- train.randomForest(formula = Numero~., data = taprendizaje, importa
 
 
 #Modelo XGBoosting
-modelo.XG <- train.xgboost(formula = Numero~., data = taprendizaje, nrounds = 500, verbose = F)
+modelo.XG <- train.xgboost(formula = Numero~., data = taprendizaje, nrounds = 79, verbose = F)
 
 ```
 
@@ -351,9 +357,29 @@ library(dplyr)
 tablaComparativa1 <- read.table("Tabla Comparativa ZipData.csv", sep = ",", dec = ".", header = TRUE)
 rownames(tablaComparativa1) <- c("arboles decision","rectangular", "triangular", "epanechnikov", "biweight", "triweight", "cos", "inv","linear","polynomial","radial", "sigmoid")
 
-indices1$`Precisión por categoría`<-sprintf("%f,%f", indices1$`Precisión por categoría`[1], indices1$`Precisión por categoría`[2])
+indices1$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices1$`Precisión por categoría`[1],
+                                            indices1$`Precisión por categoría`[2],
+                                            indices1$`Precisión por categoría`[3],
+                                            indices1$`Precisión por categoría`[4],
+                                            indices1$`Precisión por categoría`[5],
+                                            indices1$`Precisión por categoría`[6],
+                                            indices1$`Precisión por categoría`[7],
+                                            indices1$`Precisión por categoría`[8],
+                                            indices1$`Precisión por categoría`[9],
+                                            indices1$`Precisión por categoría`[10])
 
-indices2$`Precisión por categoría`<-sprintf("%f,%f", indices2$`Precisión por categoría`[1], indices2$`Precisión por categoría`[2])
+indices2$`Precisión por categoría`<-sprintf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+                                            indices2$`Precisión por categoría`[1],
+                                            indices2$`Precisión por categoría`[2],
+                                            indices2$`Precisión por categoría`[3],
+                                            indices2$`Precisión por categoría`[4],
+                                            indices2$`Precisión por categoría`[5],
+                                            indices2$`Precisión por categoría`[6],
+                                            indices2$`Precisión por categoría`[7],
+                                            indices2$`Precisión por categoría`[8],
+                                            indices2$`Precisión por categoría`[9],
+                                            indices2$`Precisión por categoría`[10])
 
 
 # Se fusionan todas los indices con la tabla
@@ -371,5 +397,8 @@ tablaComparativa
 #Mejor método segun precisión global
 tablaComparativa%>%
   filter(Precisión.Global ==  max(Precisión.Global))
+
+write.csv(tablaComparativa,"Tabla Comparativa ZipData2.csv", row.names = FALSE)
+
 ```
 
