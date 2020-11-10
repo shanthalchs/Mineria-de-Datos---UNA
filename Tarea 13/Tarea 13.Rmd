@@ -502,9 +502,137 @@ legend("topright", legend = c("rectangular", "triangular",
 
 Repita el ejercicio anterior, pero esta vez en lugar de sumar la cantidad de 1’s, promedie los errores globales cometidos en los diferentes grupos (folds). Luego grafique las 5 iteraciones para todos los algoritmos en el mismo gráfico. ¿Se puede determinar con claridad cuál algoritmo es el mejor?
 
+```{r cache = TRUE}
+
+n <- dim(tumores)[1]
+
+## Vamos a generar el modelo dejando un grupo para testing y los demás datos para aprendizaje.
+mc.1 <- 0
+mc.2 <- 0
+mc.3 <- 0
+mc.4 <- 0
+mc.5 <- 0
+mc.6 <- 0
+mc.7 <- 0
+mc.8 <- 0
+mc.9 <- 0
+
+# Hacemos validación cruzada 5 veces para ver que el error se estabiliza
+for(i in 1:5) {
+  matrizTotal.1 <- 0  
+  matrizTotal.2<- 0
+  matrizTotal.3 <- 0
+  matrizTotal.4 <- 0  
+  matrizTotal.5<- 0
+  matrizTotal.6 <- 0
+  matrizTotal.7 <- 0  
+  matrizTotal.8<- 0
+  matrizTotal.9 <- 0
+  
+  # Esta instrucción genera los k=10 grupos (Folds)
+  grupos <- createFolds(1:n,10) # grupos$Fold0i es el i-ésimo grupo  
+  # Este ciclo es el que hace "cross-validation" (validación cruzada) con 10 grupos (Folds)
+  for(k in 1:10) {    
+      muestra <- grupos[[k]] # Por ser una lista requiere de doble paréntesis
+      ttesting <- tumores[muestra,]
+      taprendizaje <- tumores[-muestra,]
+      
+      modelo.rectangular <- train.knn(tipo~., data = taprendizaje, kernel = "rectangular")
+      modelo.triangular <- train.knn(tipo~., data = taprendizaje, kernel = "triangular")
+      modelo.epanechnikov <- train.knn(tipo~., data = taprendizaje, kernel = "epanechnikov")
+      modelo.biweight <- train.knn(tipo~., data = taprendizaje, kernel = "biweight")
+      modelo.triweight <- train.knn(tipo~., data = taprendizaje, kernel = "triweight")
+      modelo.cos <- train.knn(tipo~., data = taprendizaje, kernel = "cos")
+      modelo.inv <- train.knn(tipo~., data = taprendizaje, kernel = "inv")
+      modelo.gaussian <- train.knn(tipo~., data = taprendizaje, kernel = "gaussian")
+      modelo.optimal <- train.knn(tipo~., data = taprendizaje, kernel = "optimal")
+      
+     
+      
+      prediccion1 <- predict(modelo.rectangular,ttesting,type = "class")
+      prediccion2 <- predict(modelo.triangular,ttesting,type = "class")
+      prediccion3 <- predict(modelo.epanechnikov,ttesting,type = "class")
+      prediccion4 <- predict(modelo.biweight,ttesting,type = "class")
+      prediccion5 <- predict(modelo.triweight,ttesting,type = "class")
+      prediccion6 <- predict(modelo.cos,ttesting, type = "class")
+      prediccion7 <- predict(modelo.inv,ttesting,type = "class")
+      prediccion8 <- predict(modelo.gaussian,ttesting,type = "class")
+      prediccion9 <- predict(modelo.optimal,ttesting, type = "class")
+      
+      
+      MC.1 <- confusion.matrix(ttesting, prediccion1)
+      MC.2 <- confusion.matrix(ttesting, prediccion2)
+      MC.3 <- confusion.matrix(ttesting, prediccion3)
+      MC.4 <- confusion.matrix(ttesting, prediccion4)
+      MC.5 <- confusion.matrix(ttesting, prediccion5)
+      MC.6 <- confusion.matrix(ttesting, prediccion6)
+      MC.7 <- confusion.matrix(ttesting, prediccion7)
+      MC.8 <- confusion.matrix(ttesting, prediccion8)
+      MC.9 <- confusion.matrix(ttesting, prediccion9)
+      
+      
+      
+      # Sumatoria de todas las matrices de confusión
+      
+      matrizTotal.1 <- matrizTotal.1 + MC.1  
+      matrizTotal.2<- matrizTotal.2 + MC.2
+      matrizTotal.3 <- matrizTotal.3 + MC.3
+      matrizTotal.4 <- matrizTotal.4 + MC.4  
+      matrizTotal.5<- matrizTotal.5 + MC.5
+      matrizTotal.6 <- matrizTotal.6 + MC.6
+      matrizTotal.7 <- matrizTotal.7 + MC.7  
+      matrizTotal.8<- matrizTotal.8 + MC.8
+      matrizTotal.9 <- matrizTotal.9 + MC.9
+  } 
+  
+  #Matriz Total para cada iteración
+  mc.1 <- mc.1 + matrizTotal.1
+  mc.2 <- mc.2 + matrizTotal.2
+  mc.3 <- mc.3 + matrizTotal.3
+  mc.4 <- mc.4 + matrizTotal.1
+  mc.5 <- mc.5 + matrizTotal.2
+  mc.6 <- mc.6 + matrizTotal.3
+  mc.7 <- mc.7 + matrizTotal.1
+  mc.8 <- mc.8 + matrizTotal.2
+  mc.9 <- mc.9 + matrizTotal.3
+  
+  
+}
+
+#Matriz de Confusion Promedio
+
+mc.pr.1 <- mc.1/5
+mc.pr.2 <- mc.2/5
+mc.pr.3 <- mc.3/5
+
+
+#Error global Promedio
+err.pr.1 <- 1-  sum(diag(mc.pr.1)/sum(mc.pr.1))
+err.pr.2 <- 1- sum(diag(mc.pr.2)/sum(mc.pr.2))
+err.pr.3 <- 1 -sum(diag(mc.pr.3)/sum(mc.pr.3))
+```
+
+### Gráficos
+
 ```{r}
 
-```
+error <- c(err.pr.1,err.pr.2,err.pr.3)
+names(error)<- c("discrete", "real", "gentle")
+
+barplot(error, ylim = c(0,max(error)), main = "Variación del Error Global", ylab = "Error Global", col = c("magenta","green","blue"))
+legend("topright", legend = c("discrete","Real","Gentle"), fill= c("magenta","green","blue"), lty = 1, lwd = 1)
+
+cantidad1 <- c(mc.pr.1[4],mc.pr.2[4],mc.pr.3[4])
+names(cantidad1)<- c("discrete", "real", "gentle")
+
+barplot(cantidad1, ylim = c(0,max(cantidad1)), main = "Variación del Acierto de 1s", ylab = "Cantidad de 1's", col = c("magenta","green","blue"))
+legend("topright", legend = c("discrete","Real","Gentle"), fill= c("magenta","green","blue"), lty = 1, lwd = 1)
+
+cantidad0 <- c(mc.pr.1[1],mc.pr.2[1],mc.pr.3[1])
+names(cantidad0)<- c("discrete", "real", "gentle")
+
+barplot(cantidad0, ylim = c(0,max(cantidad0)), main = "Variación del Acierto de 0s", ylab = "Cantidad de 0's", col = c("magenta","green","blue"))
+legend("topright", legend = c("discrete","Real","Gentle"), fill= c("magenta","green","blue"), lty = 1, lwd = 1)
 
 
 # Ejercicio 4 : [25 puntos] {.tabset .tabset-fade}
