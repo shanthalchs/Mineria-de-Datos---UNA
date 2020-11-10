@@ -1,0 +1,15 @@
+base
+methods
+datasets
+utils
+grDevices
+graphics
+stats
+knitr
+rmdformats
+lattice
+ggplot2
+caret
+dplyr
+MASS
+traineR
