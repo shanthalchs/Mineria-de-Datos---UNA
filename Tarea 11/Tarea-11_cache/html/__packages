@@ -1,0 +1,8 @@
+base
+knitr
+rmdformats
+lattice
+ggplot2
+caret
+dplyr
+traineR
