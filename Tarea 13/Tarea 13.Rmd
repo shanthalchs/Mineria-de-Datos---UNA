@@ -36,6 +36,7 @@ Realice lo siguiente:
 library(caret)
 library(dplyr)
 library(MASS)
+library(traineR)
 
 tumores <- read.table("Datos Tarea/tumores_V2.csv", sep = ",", dec = ".", header = TRUE, stringsAsFactors = TRUE)[,-1]
 dim(tumores)
@@ -43,10 +44,11 @@ str(tumores)
 summary(tumores)
 ```
 
-## 2. El objetivo de este ejercicio es analizar la variación del error (usando el enfoque training- testing) para la predicción de variable tipo (que indica 1 = Tumor, 0 = No-Tumor), para esto repita 5 veces el cálculo de error global de predicción usando el método de los k vecinos más cercanos (use kmax=50) y con un 75% de los datos para tabla aprendizaje y un 25 % para la tabla testing. Grafique los resultados.
+## 2. 
+
+El objetivo de este ejercicio es analizar la variación del error (usando el enfoque training- testing) para la predicción de variable tipo (que indica 1 = Tumor, 0 = No-Tumor), para esto repita 5 veces el cálculo de error global de predicción usando el método de los k vecinos más cercanos (use kmax=50) y con un 75% de los datos para tabla aprendizaje y un 25 % para la tabla testing. Grafique los resultados.
 
 ```{r}
-library(traineR)
 
 v.error.tt <- rep(0,5)
 
@@ -78,7 +80,9 @@ plot(v.error.tt, col = "red", type = "b", main = "Variación del Error de KNN", 
 
 ```
 
-## 3. El objetivo de este ejercicio es medir el error para la predicción de variable tipo, utilizando validación cruzada con K grupos (K−fold cross-validation). Para esto usando el método de los k vecinos más cercanos (use kmax=50) realice una validación cruzada 5 veces con 10 grupos (folds) y grafique el error obtenido en cada iteración, agregue en este gráfico los 5 errores generados en el ejercicio anterior.
+## 3. 
+
+El objetivo de este ejercicio es medir el error para la predicción de variable tipo, utilizando validación cruzada con K grupos (K−fold cross-validation). Para esto usando el método de los k vecinos más cercanos (use kmax=50) realice una validación cruzada 5 veces con 10 grupos (folds) y grafique el error obtenido en cada iteración, agregue en este gráfico los 5 errores generados en el ejercicio anterior.
 
 ```{r}
 library(caret)
@@ -128,7 +132,9 @@ legend("topright", legend = c("K-ésimo grupo","Tabla Testing"), col = c("magent
 
 Para esta pregunta también usaremos los datos tumores.csv.
 
-## 1. El objetivo de este ejercicio es calibrar el método de ADA para esta Tabla de Datos. Aquí interesa predecir en la variable tipo. Para esto genere 5 Validaciones Cruzadas con 10 grupos calibrando el modelo de acuerdo con los tres tipos de algoritmos que permite, discrete, real y gentle. Para medir la calidad de método sume la cantidad de 1’s detectados en los diferentes grupos. Luego grafique las 5 iteraciones para los tres algoritmos en el mismo gráfico. ¿Se puede determinar con claridad cuál algoritmo es el mejor? Para generar los modelos predictivos use las siguientes instrucciones:
+## 1.
+
+El objetivo de este ejercicio es calibrar el método de ADA para esta Tabla de Datos. Aquí interesa predecir en la variable tipo. Para esto genere 5 Validaciones Cruzadas con 10 grupos calibrando el modelo de acuerdo con los tres tipos de algoritmos que permite, discrete, real y gentle. Para medir la calidad de método sume la cantidad de 1’s detectados en los diferentes grupos. Luego grafique las 5 iteraciones para los tres algoritmos en el mismo gráfico. ¿Se puede determinar con claridad cuál algoritmo es el mejor? Para generar los modelos predictivos use las siguientes instrucciones:
 
 \begin{lstlisting}[language = R]
 
@@ -200,7 +206,9 @@ legend("topright", legend = c("discrete","Real","Gentle"), col = c("magenta","gr
 
 Según el gráfico anterior, pareciera que el nucleo discrete acierta la mayoría de veces la mayor cantidad de 1s.
 
-## 2. Repita el ejercicio anterior, pero esta vez en lugar de sumar la cantidad de 1’s, promedie los errores globales cometidos en los diferentes grupos (folds). Luego grafique las 5 iteraciones para los tres algoritmos en el mismo gráfico. ¿Se puede determinar con claridad cuál algoritmo es el mejor?
+## 2. 
+
+Repita el ejercicio anterior, pero esta vez en lugar de sumar la cantidad de 1’s, promedie los errores globales cometidos en los diferentes grupos (folds). Luego grafique las 5 iteraciones para los tres algoritmos en el mismo gráfico. ¿Se puede determinar con claridad cuál algoritmo es el mejor?
 
 ```{r cache=TRUE,fig.width=12, fig.height=6}
 n <- dim(tumores)[1]
@@ -243,12 +251,13 @@ for(i in 1:5) {
       acierto2 <- sum(diag(MC.2)/sum(MC.2))
       acierto3 <- sum(diag(MC.3)/sum(MC.3))
       
-      v.pg1[k] <- acierto1
-      v.pg2[k] <- acierto2
-      v.pg3[k] <- acierto3
+      #error global
+      v.pg1[k] <- 1 - acierto1
+      v.pg2[k] <- 1 - acierto2
+      v.pg3[k] <- 1 - acierto3
   } 
   
-  #promedio total de la precisión global para cada iteración
+  #promedio total del error global para cada iteración
   pg.1[i] <- mean(v.pg1)
   pg.2[i] <- mean(v.pg2)
   pg.3[i] <- mean(v.pg3)
@@ -359,7 +368,9 @@ barplot(cantidad0, ylim = c(0,max(cantidad0)), main = "Variación del Acierto de
 legend("topright", legend = c("discrete","Real","Gentle"), fill= c("magenta","green","blue"), lty = 1, lwd = 1)
 ```
 
-## 4. ¿Cuál algoritmo usaría con base en la información obtenida en el ejercicio anterior?
+## 4. 
+
+¿Cuál algoritmo usaría con base en la información obtenida en el ejercicio anterior?
 
 ```{r}
 #minimo error
@@ -382,10 +393,10 @@ Para esta pregunta usaremos nuevamente los datos tumores.csv.
 
 El objetivo de este ejercicio es calibrar el método de knn para esta Tabla de Datos. Aquí interesa predecir en la variable tipo. Para esto genere 5 Validaciones Cruzadas con 10 grupos calibrando el modelo de acuerdo con todos los tipos de algoritmos que permite train.kknn en el parámetro kernel, estos algoritmos son: rectangular, triangular, epanechnikov, biweight, triweight, cos, inv, gaussian y optimal. Para medir la calidad de método sume la cantidad de 1’s detectados en los diferentes grupos. Luego grafique las 5 iteraciones para todos algoritmos en el mismo gráfico. ¿Se puede determinar con claridad cuál algoritmo es el mejor?
 
-```{r}
+```{r, fig.width=12, fig.height=6}
 n <- dim(tumores)[1]
 
-## Vamos a generar el modelo dejando un grupo para testing y los demás datos para aprendizaje.
+
 cantidad1.1 <- rep(1:5)
 cantidad1.2 <- rep(1:5)
 cantidad1.3 <- rep(1:5)
@@ -411,7 +422,7 @@ for(i in 1:5) {
   matrizTotal.10 <- 0  
   
   
-  # Esta instrucción genera los k=10 grupos (Folds)
+  # Esta instrucción genera los k=10 grupos 
   grupos <- createFolds(1:n,10) # grupos$Fold0i es el i-ésimo grupo  
   # Este ciclo es el que hace "cross-validation" (validación cruzada) con 10 grupos (Folds)
   for(k in 1:10) {    
@@ -496,15 +507,152 @@ points(cantidad1.9, col = "purple", type = "b")
 legend("topright", legend = c("rectangular", "triangular",
 "epanechnikov", "biweight", "triweight", "cos", "inv", "gaussian", "optimal"), col = c("magenta","green","red","blue","yellow","black","lightblue","orange","purple"), lty = 1, lwd = 1)
 ```
-
+A partir del gráfico anterior parece que en este caso tiene en la mayoría de casos el mayor acierto de 1s, seguido de gaussian, y triweight el peor de todos. 
 
 ## 2.
 
 Repita el ejercicio anterior, pero esta vez en lugar de sumar la cantidad de 1’s, promedie los errores globales cometidos en los diferentes grupos (folds). Luego grafique las 5 iteraciones para todos los algoritmos en el mismo gráfico. ¿Se puede determinar con claridad cuál algoritmo es el mejor?
 
-```{r cache = TRUE}
+```{r cache = TRUE, fig.height=6,fig.width=12}
 
 n <- dim(tumores)[1]
+
+## Vamos a generar el modelo dejando un grupo para testing y los demás datos para aprendizaje.
+err.pr.1 <- 0
+err.pr.2 <- 0
+err.pr.3 <- 0
+err.pr.4 <- 0
+err.pr.5 <- 0
+err.pr.6 <- 0
+err.pr.7 <- 0
+err.pr.8 <- 0
+err.pr.9 <- 0
+
+# Hacemos validación cruzada 5 veces para ver que el error se estabiliza
+for(i in 1:5) {
+  v.err.1 <- 0  
+  v.err.2<- 0
+  v.err.3 <- 0
+  v.err.4 <- 0  
+  v.err.5<- 0
+  v.err.6 <- 0
+  v.err.7 <- 0  
+  v.err.8<- 0
+  v.err.9 <- 0
+  
+  # Esta instrucción genera los k=10 grupos (Folds)
+  grupos <- createFolds(1:n,10) # grupos$Fold0i es el i-ésimo grupo  
+  # Este ciclo es el que hace "cross-validation" (validación cruzada) con 10 grupos (Folds)
+  for(k in 1:10) {    
+      muestra <- grupos[[k]] # Por ser una lista requiere de doble paréntesis
+      ttesting <- tumores[muestra,]
+      taprendizaje <- tumores[-muestra,]
+      
+      modelo.rectangular <- train.knn(tipo~., data = taprendizaje, kernel = "rectangular")
+      modelo.triangular <- train.knn(tipo~., data = taprendizaje, kernel = "triangular")
+      modelo.epanechnikov <- train.knn(tipo~., data = taprendizaje, kernel = "epanechnikov")
+      modelo.biweight <- train.knn(tipo~., data = taprendizaje, kernel = "biweight")
+      modelo.triweight <- train.knn(tipo~., data = taprendizaje, kernel = "triweight")
+      modelo.cos <- train.knn(tipo~., data = taprendizaje, kernel = "cos")
+      modelo.inv <- train.knn(tipo~., data = taprendizaje, kernel = "inv")
+      modelo.gaussian <- train.knn(tipo~., data = taprendizaje, kernel = "gaussian")
+      modelo.optimal <- train.knn(tipo~., data = taprendizaje, kernel = "optimal")
+      
+     
+      
+      prediccion1 <- predict(modelo.rectangular,ttesting,type = "class")
+      prediccion2 <- predict(modelo.triangular,ttesting,type = "class")
+      prediccion3 <- predict(modelo.epanechnikov,ttesting,type = "class")
+      prediccion4 <- predict(modelo.biweight,ttesting,type = "class")
+      prediccion5 <- predict(modelo.triweight,ttesting,type = "class")
+      prediccion6 <- predict(modelo.cos,ttesting, type = "class")
+      prediccion7 <- predict(modelo.inv,ttesting,type = "class")
+      prediccion8 <- predict(modelo.gaussian,ttesting,type = "class")
+      prediccion9 <- predict(modelo.optimal,ttesting, type = "class")
+      
+      
+      MC.1 <- confusion.matrix(ttesting, prediccion1)
+      MC.2 <- confusion.matrix(ttesting, prediccion2)
+      MC.3 <- confusion.matrix(ttesting, prediccion3)
+      MC.4 <- confusion.matrix(ttesting, prediccion4)
+      MC.5 <- confusion.matrix(ttesting, prediccion5)
+      MC.6 <- confusion.matrix(ttesting, prediccion6)
+      MC.7 <- confusion.matrix(ttesting, prediccion7)
+      MC.8 <- confusion.matrix(ttesting, prediccion8)
+      MC.9 <- confusion.matrix(ttesting, prediccion9)
+      
+      #Precisión Global (De todos los valores el porcentaje que predijo bien)
+      acierto.1 <- sum(diag(MC.1)/sum(MC.1))
+      acierto.2 <- sum(diag(MC.2)/sum(MC.2))
+      acierto.3 <- sum(diag(MC.3)/sum(MC.3))
+      acierto.4 <- sum(diag(MC.4)/sum(MC.4))
+      acierto.5 <- sum(diag(MC.5)/sum(MC.5))
+      acierto.6 <- sum(diag(MC.6)/sum(MC.6))
+      acierto.7 <- sum(diag(MC.7)/sum(MC.7))
+      acierto.8 <- sum(diag(MC.8)/sum(MC.8))
+      acierto.9 <- sum(diag(MC.9)/sum(MC.9))
+      
+      
+      #error global
+      v.err.1[k] <- 1 - acierto.1
+      v.err.2[k] <- 1 - acierto.2
+      v.err.3[k] <- 1 - acierto.3
+      v.err.4[k] <- 1 - acierto.4
+      v.err.5[k] <- 1 - acierto.5
+      v.err.6[k] <- 1 - acierto.6
+      v.err.7[k] <- 1 - acierto.7
+      v.err.8[k] <- 1 - acierto.8
+      v.err.9[k] <- 1 - acierto.9
+  } 
+  
+  #promedio total del error global para cada iteración
+  err.pr.1[i] <- mean(v.err.1)
+  err.pr.2[i] <- mean(v.err.2)
+  err.pr.3[i] <- mean(v.err.3)
+  err.pr.4[i] <- mean(v.err.4)
+  err.pr.5[i] <- mean(v.err.5)
+  err.pr.6[i] <- mean(v.err.6)
+  err.pr.7[i] <- mean(v.err.7)
+  err.pr.8[i] <- mean(v.err.8)
+  err.pr.9[i] <- mean(v.err.9)
+  
+      
+      
+  } 
+  
+
+#Gráficos
+
+colores <- c("magenta","green","red","blue","yellow","black","lightblue","orange","purple")
+nucleos <- c("rectangular", "triangular", "epanechnikov", "biweight", "triweight", "cos", "inv", "gaussian", "optimal")
+
+error <- c(err.pr.1,err.pr.2,err.pr.3,err.pr.4,err.pr.5,err.pr.6,err.pr.7,err.pr.8,err.pr.9)
+
+names(error)<- nucleos
+
+
+plot(err.pr.1, col = colores[1], type = "b", ylim = c(min(error), max(error) + 0.01), main = "Variación del Promedio del Error Global", xlab = "Número de iteración", ylab = "Estimación del Promedio")
+points(err.pr.2, col = colores[2], type = "b")
+points(err.pr.3, col = colores[3], type = "b")
+points(err.pr.4, col = colores[4], type = "b")
+points(err.pr.5, col = colores[5], type = "b")
+points(err.pr.6, col = colores[6], type = "b")
+points(err.pr.7, col = colores[7], type = "b")
+points(err.pr.8, col = colores[8], type = "b")
+points(err.pr.9, col = colores[9], type = "b")
+legend("topright", legend = c(nucleos), col = colores, lty = 1, lwd = 1)
+
+
+
+
+```
+En este caso pareciera que el mayor error promedio ser'ia el de gaussian y el menor en la mayoria de las iteraciones lo tiene el nucleo triangular.
+
+## 3.
+
+Para estar realmente seguros de cuál de los tipos algoritmos es mejor, modifique (una en uno solo código) los códigos de los dos ejercicios anteriores de manera que, en lugar de sumar la cantidad de 1’s detectados y de promediar los errores globales, guarde en cada iteración (en listas) las matrices de confusión de cada uno de los 3 algoritmos. Luego al final de los ciclos ejecutados para cada algoritmo calcule una Matriz de Confusión Promedio de todas las matrices de confusión guardadas en la lista del respectivo algoritmo; así con estas Matrices de Confusión Promedio, mediante gráficos de barras, determine el método que en promedio detecta mayor porcentaje de 1’s, determine el método que en promedio detecta mayor porcentaje de 0’s y determine el método que en promedio tiene menor error global. 
+
+```{r}
 
 ## Vamos a generar el modelo dejando un grupo para testing y los demás datos para aprendizaje.
 mc.1 <- 0
@@ -570,10 +718,6 @@ for(i in 1:5) {
       MC.8 <- confusion.matrix(ttesting, prediccion8)
       MC.9 <- confusion.matrix(ttesting, prediccion9)
       
-      
-      
-      # Sumatoria de todas las matrices de confusión
-      
       matrizTotal.1 <- matrizTotal.1 + MC.1  
       matrizTotal.2<- matrizTotal.2 + MC.2
       matrizTotal.3 <- matrizTotal.3 + MC.3
@@ -583,20 +727,20 @@ for(i in 1:5) {
       matrizTotal.7 <- matrizTotal.7 + MC.7  
       matrizTotal.8<- matrizTotal.8 + MC.8
       matrizTotal.9 <- matrizTotal.9 + MC.9
+      
   } 
   
   #Matriz Total para cada iteración
+  
   mc.1 <- mc.1 + matrizTotal.1
   mc.2 <- mc.2 + matrizTotal.2
   mc.3 <- mc.3 + matrizTotal.3
-  mc.4 <- mc.4 + matrizTotal.1
-  mc.5 <- mc.5 + matrizTotal.2
-  mc.6 <- mc.6 + matrizTotal.3
-  mc.7 <- mc.7 + matrizTotal.1
-  mc.8 <- mc.8 + matrizTotal.2
-  mc.9 <- mc.9 + matrizTotal.3
-  
-  
+  mc.4 <- mc.4 + matrizTotal.4
+  mc.5 <- mc.5 + matrizTotal.5
+  mc.6 <- mc.6 + matrizTotal.6
+  mc.7 <- mc.7 + matrizTotal.7
+  mc.8 <- mc.8 + matrizTotal.8
+  mc.9 <- mc.9 + matrizTotal.9
 }
 
 #Matriz de Confusion Promedio
@@ -604,35 +748,62 @@ for(i in 1:5) {
 mc.pr.1 <- mc.1/5
 mc.pr.2 <- mc.2/5
 mc.pr.3 <- mc.3/5
+mc.pr.4 <- mc.4/5
+mc.pr.5 <- mc.5/5
+mc.pr.6 <- mc.6/5
+mc.pr.7 <- mc.7/5
+mc.pr.8 <- mc.8/5
+mc.pr.9 <- mc.9/5
 
 
 #Error global Promedio
 err.pr.1 <- 1-  sum(diag(mc.pr.1)/sum(mc.pr.1))
 err.pr.2 <- 1- sum(diag(mc.pr.2)/sum(mc.pr.2))
 err.pr.3 <- 1 -sum(diag(mc.pr.3)/sum(mc.pr.3))
+err.pr.4 <- 1-  sum(diag(mc.pr.4)/sum(mc.pr.4))
+err.pr.5 <- 1- sum(diag(mc.pr.5)/sum(mc.pr.5))
+err.pr.6 <- 1 -sum(diag(mc.pr.6)/sum(mc.pr.6))
+err.pr.7 <- 1-  sum(diag(mc.pr.7)/sum(mc.pr.7))
+err.pr.8 <- 1- sum(diag(mc.pr.8)/sum(mc.pr.8))
+err.pr.9 <- 1 -sum(diag(mc.pr.9)/sum(mc.pr.9))
+
 ```
 
-### Gráficos
+Graficos
+```{r, fig.width=12,fig.height=6}
+errorPr <- c(err.pr.1,err.pr.2,err.pr.3,err.pr.4,err.pr.5,err.pr.6,err.pr.7,err.pr.8,err.pr.9)
+names(errorPr) <- nucleos
 
+barplot(errorPr, ylim = c(0,max(errorPr)), main = "Variación del Error Global", ylab = "Error Global", col = colores)
+
+
+cantidad1 <- c(mc.pr.1[4],mc.pr.2[4],mc.pr.3[4],mc.pr.4[4],mc.pr.5[4],mc.pr.6[4],mc.pr.7[4],mc.pr.8[4],mc.pr.9[4])
+names(cantidad1)<- nucleos
+
+barplot(cantidad1, ylim = c(0,max(cantidad1)), main = "Variación del Acierto de 1s", ylab = "Cantidad de 1's", col = colores)
+
+
+cantidad0 <- c(mc.pr.1[1],mc.pr.2[1],mc.pr.3[1],mc.pr.4[1],mc.pr.5[1],mc.pr.6[1],mc.pr.7[1],mc.pr.8[1],mc.pr.9[1])
+names(cantidad0)<- nucleos
+
+barplot(cantidad0, ylim = c(0,max(cantidad0)), main = "Variación del Acierto de 0s", ylab = "Cantidad de 0's", col = colores)
+
+```
+Seg'un los graficos anteriores el error minimo global en promedio lo tiene el nucleo triangular y parece que en numero de aciertos todos son bastante similares en 1, sin embargo para el 0 el mayor numero de aciertos se lo gana triweigth.
+
+## 4.
+
+Cu'al algoritmo usar'ia con base en la informacion obtenida en el ejercicio anterior?
 ```{r}
+#minimo error
+errorPr[errorPr == min(errorPr)]
 
-error <- c(err.pr.1,err.pr.2,err.pr.3)
-names(error)<- c("discrete", "real", "gentle")
+#maximo cantidad de 1s predichos
+cantidad1[cantidad1 == max(cantidad1)]
 
-barplot(error, ylim = c(0,max(error)), main = "Variación del Error Global", ylab = "Error Global", col = c("magenta","green","blue"))
-legend("topright", legend = c("discrete","Real","Gentle"), fill= c("magenta","green","blue"), lty = 1, lwd = 1)
-
-cantidad1 <- c(mc.pr.1[4],mc.pr.2[4],mc.pr.3[4])
-names(cantidad1)<- c("discrete", "real", "gentle")
-
-barplot(cantidad1, ylim = c(0,max(cantidad1)), main = "Variación del Acierto de 1s", ylab = "Cantidad de 1's", col = c("magenta","green","blue"))
-legend("topright", legend = c("discrete","Real","Gentle"), fill= c("magenta","green","blue"), lty = 1, lwd = 1)
-
-cantidad0 <- c(mc.pr.1[1],mc.pr.2[1],mc.pr.3[1])
-names(cantidad0)<- c("discrete", "real", "gentle")
-
-barplot(cantidad0, ylim = c(0,max(cantidad0)), main = "Variación del Acierto de 0s", ylab = "Cantidad de 0's", col = c("magenta","green","blue"))
-legend("topright", legend = c("discrete","Real","Gentle"), fill= c("magenta","green","blue"), lty = 1, lwd = 1)
+#maximo cantidad de 0s predichos
+cantidad0[cantidad0 == max(cantidad0)]
+```
 
 
 # Ejercicio 4 : [25 puntos] {.tabset .tabset-fade}
