@@ -69,8 +69,15 @@ ignore <- clusterEvalQ(clp, {
     
     modelo <- metodo(formula, data = taprendizaje, ...)
     prediccion <- predict(modelo, ttesting, type = "class")
-    MC <- confusion.matrix(ttesting, prediccion)
-    return(MC)
+    
+    if(metodo == "lda"){
+      browser()
+      MC <- table(ttesting[,17], prediccion.lda$class)
+    }  
+      else {
+      MC <- confusion.matrix(ttesting, prediccion)
+      }
+   return(MC) 
   }
   return(NULL)
 })
@@ -98,7 +105,7 @@ for(i in 1:cantidad.validacion.cruzada) {
     ### Inserta estas 1 variable en cada peón
     clusterExport(clp, "muestra")
     
-    resultado <- clusterApply(clp, algoritmos, function(ptipos) {
+    resultado <- lapply(algoritmos, function(ptipos) {
       
       MC <- ejecutar.prediccion(tumores, tipo~. ,muestra, train.ada,type = ptipos, iter=80, nu=1)
       
@@ -855,27 +862,72 @@ Esta pregunta también utilizan nuevamente los datos tumores.csv.
 ## 1.
 El objetivo de este ejercicio es comparar todos los métodos predictivos vistos en el curso con esta tabla de datos. Aquí interesa predecir en la variable tipo, Usando los paquetes snow y traineR programe en paralelo 5 Validaciones Cruzadas con 10 grupos para los métodos SVM, KNN, Arboles, Bosques, Potenciación, eXtreme Gradient Boosting, LDA, Bayes, Regresión Logística y Redes Neuronales, para KNN y Potenciación use los parámetros obtenidos en las calibraciones realizadas en los ejercicios anteriores. Luego grafique las 5 iteraciones para todos los métodos en el mismo gráfico. ¿Se puede determinar con claridad cuál método es el mejor?
 
-```{r}
+```{r, fig.width=12, fig.height=6}
 
 
+# Inicio del Proceso Paralelo**
+# Creamos peones
+peones <- parallel::detectCores()
+clp <- makeCluster(peones, type = "SOCK")
+
+ejecutar.prediccion <- function(datos, formula, muestra, metodo, ...) {
+  ttesting <- datos[muestra, ]
+  ttraining <- datos[-muestra, ]
+  #modelo <- metodo(formula, data = ttraining, ...)
+  modelo <- do.call(metodo, list(formula, data = ttraining, ...))
+  prediccion <- predict(modelo, ttesting, type = "class")
+  MC <- confusion.matrix(ttesting, prediccion)
+  return(MC)
+}
+
+# La siguiente función permite fijar parámetros específicos para cada método, lo cual es útil para usar otros parámetros que no sean los default.
+
+ejecutar.prediccion.particular <- function(datos, formula, muestra, metodo) {
+  if(metodo == "train.svm"){return(ejecutar.prediccion(datos, formula, muestra, metodo, kernel = "radial", probability = FALSE))}
+  if(metodo == "train.knn"){return(ejecutar.prediccion(datos, formula, muestra, metodo, kmax = 37))}
+  if(metodo == "train.bayes"){return(ejecutar.prediccion(datos, formula, muestra, metodo))}
+  if(metodo == "train.rpart"){return(ejecutar.prediccion(datos, formula, muestra, metodo))}
+  if(metodo == "train.randomForest"){return(ejecutar.prediccion(datos, formula, muestra, metodo, importance = TRUE))}
+  if(metodo == "train.ada"){return(ejecutar.prediccion(datos, formula, muestra, metodo, iter = 20, nu = 1, type = "discrete"))}
+  if(metodo == "train.nnet"){return(ejecutar.prediccion(datos, formula, muestra, metodo, size = 5, rang = 0.1, decay = 5e-04, maxit = 100, trace = FALSE))}
+  if(metodo == "train.xgboost"){return(ejecutar.prediccion(datos, formula, muestra, metodo, nrounds = 79, print_every_n = 10, maximize = F , eval_metric = "error"))}
+  if(metodo == "train.glm"){return(ejecutar.prediccion(datos, formula, muestra, metodo))}
+  if(metodo == "lda"){return(ejecutar.prediccion(datos, formula, muestra, metodo))}
+}
+
+# Constructor del cluster
+numero.filas <- nrow(tumores)
 cantidad.validacion.cruzada <- 5
 cantidad.grupos <- 10
+metodos <- c("train.svm", "train.knn", "train.bayes", "train.rpart", "train.randomForest", "train.ada", "train.nnet",
+             "train.xgboost", "train.glm", "lda")
 
 deteccion.si.svm <- c()
 deteccion.si.knn <- c()
-deteccion.si.lda <- c()
 deteccion.si.bayes <- c()
 deteccion.si.arbol <- c()
 deteccion.si.bosque <- c()
-deteccion.si.pot <- c()
-deteccion.si.nnet<- c()
+deteccion.si.potenciacion <- c()
+deteccion.si.nnet <- c()
 deteccion.si.xgboost <- c()
 deteccion.si.glm <- c()
+deteccion.si.lda <- c()
+# Exportamos paquetes a los procesadores
+ignore <- clusterEvalQ(clp, {
+  library(dplyr)
+  library(traineR)
+  library(MASS)
+  return(NULL)
+})
 
+# Exportamos los datos y las funciones a los procesadores
+clusterExport(clp, list("tumores", "ejecutar.prediccion", "ejecutar.prediccion.particular"))
+
+tiempo.paralelo <- Sys.time()
 
 # Validación cruzada 5 veces
-for (i in 1:cantidad.validacion.cruzada) {
-  grupos <- createFolds(1:numero.filas, cantidad.grupos) # Crea los 10 grupos
+for(i in 1:cantidad.validacion.cruzada) {
+  grupos <- createFolds(1:numero.filas, cantidad.grupos)  # Crea los 10 grupos
   si.svm <- 0
   si.knn <- 0
   si.bayes <- 0
@@ -884,107 +936,201 @@ for (i in 1:cantidad.validacion.cruzada) {
   si.potenciacion <- 0
   si.nnet <- 0
   si.xg  <- 0
-  si.lda <- 0
   si.glm <- 0
+  si.lda <- 0
   
   # Este ciclo es el que hace validación cruzada con 10 grupos
-  for (k in 1:cantidad.grupos) {
-    muestra <- grupos[[k]] # Por ser una lista requiere de doble paréntesis
-    ttesting <- tumores[muestra, ]
-    ttraining <- tumores[-muestra, ]
+  for(k in 1:cantidad.grupos) {
+    muestra <- grupos[[k]]  # Por ser una lista requiere de doble paréntesis
+    # Exportamos la muestra a los procesadores
+    clusterExport(clp, "muestra")
     
-    modelo <- train.svm(tipo ~ ., data = ttraining, kernel = "linear", probability = FALSE)
-    prediccion <- predict(modelo, ttesting)
-    MC <- confusion.matrix(ttesting, prediccion)
-    si.svm <- si.svm + MC["Si", "Si"] 
+    resultado <- clusterApply(clp, metodos, function(metodo) {
+      MC <- ejecutar.prediccion.particular(datos = tumores, formula = tipo~., muestra = muestra, metodo = metodo)
+      si.val <- MC["Si", "Si"]
+      valores <- list(Tipo = metodo, Resultado = si.val)
+      return(valores)
+    })
     
-    modelo <- train.knn(tipo ~ ., data = ttraining)
-    prediccion <- predict(modelo, ttesting)
-    MC <- confusion.matrix(ttesting, prediccion)
-    si.knn <- si.knn + MC["Si", "Si"] 
+    for (j in seq_along(metodos)) {
+      if (resultado[[j]][[1]] == "train.svm")
+        si.svm <- si.svm + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.knn")
+        si.knn <- si.knn + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.bayes")
+        si.bayes <- si.bayes + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.rpart")
+        si.arbol <- si.arbol + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.randomForest")
+        si.bosque <- si.bosque + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.ada")
+        si.potenciacion <- si.potenciacion + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.nnet")
+        si.nnet <- si.nnet + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.xgboost")
+        si.xg <- si.xg + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.glm")
+        si.glm <- si.glm + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "lda")
+        si.lda <- si.lda + resultado[[j]][[2]]
+    }
     
-    modelo <- train.bayes(tipo ~ ., data = ttraining)
-    prediccion <- predict(modelo, ttesting)
-    MC <- confusion.matrix(ttesting, prediccion)
-    si.bayes <- si.bayes + MC["Si", "Si"] 
-    
-    modelo = train.rpart(tipo ~ ., data = ttraining)
-    prediccion <- predict(modelo, ttesting)
-    MC <- confusion.matrix(ttesting, prediccion)
-    si.arbol <- si.arbol + MC["Si", "Si"] 
-    
-    modelo <- train.randomForest(tipo ~ ., data = ttraining)
-    prediccion <- predict(modelo, ttesting)
-    MC <- confusion.matrix(ttesting, prediccion)
-    si.bosque <- si.bosque + MC["Si", "Si"] 
-    
-    modelo <- train.ada(tipo ~ ., data = ttraining, iter = 80, nu = 1, type = "discrete")
-    prediccion <- predict(modelo, ttesting)
-    MC <- confusion.matrix(ttesting, prediccion)
-    si.potenciacion <- si.potenciacion + MC["Si", "Si"] 
-    
-    modelo <- train.nnet(tipo ~ ., data = ttraining,size = 2, maxit = 1000)
-    prediccion <- predict(modelo, ttesting)
-    MC <- confusion.matrix(ttesting, prediccion)
-    si.nnet <- si.nnet + MC["Si", "Si"] 
-    
-    modelo <- train.xgboost(tipo ~ ., data = ttraining, nrounds = 600, verbose = F)
-    prediccion <- predict(modelo, ttesting)
-    MC <- confusion.matrix(ttesting, prediccion)
-    si.xg <- si.xg + MC["Si", "Si"] 
-    
-    modelo <- lda(tipo ~., data = ttraining)
-    prediccion <- predict(modelo, ttesting)
-    MC <- confusion.matrix(ttesting, prediccion)
-    si.lda <- si.lda + MC["Si", "Si"] 
-    
-    modelo <- train.glm(tipo ~ ., data = ttraining)
-    prediccion <- predict(modelo, ttesting)
-    MC <- confusion.matrix(ttesting, prediccion)
-    si.glm <- si.glm + MC["Si", "Si"] 
   }
-  
   deteccion.si.svm[i] <- si.svm
   deteccion.si.knn[i] <- si.knn
   deteccion.si.bayes[i] <- si.bayes
   deteccion.si.arbol[i] <- si.arbol
   deteccion.si.bosque[i] <- si.bosque
   deteccion.si.potenciacion[i] <- si.potenciacion
-  deteccion.si.lda[i] <- si.lda
-  deteccion.si.xgboost[i] <- si.xg
   deteccion.si.nnet[i] <- si.nnet
+  deteccion.si.xgboost[i] <- si.xg
   deteccion.si.glm[i] <- si.glm
-  
+  deteccion.si.lda[i] <- si.lda
 }
 
-
-
-
-resultados <- data.frame("svm" = deteccion.si.svm,
-                         "k_vecinos" = deteccion.si.knn,
-                         "bayes" = deteccion.si.bayes,
-                         "arboles" = deteccion.si.arbol,
-                         "bosques" = deteccion.si.bosque,
-                         "potenciacion" = deteccion.si.potenciacion,
-                         "redes_nnet" = deteccion.si.nnet,
-                         "xgboost" = deteccion.si.xgboost,
-                         "LDA" = deteccion.si.lda, 
-                         "regresion_logistica" = deteccion.si.glm)
-
-par(oma=c(0, 0, 0, 8)) # Hace espacio para la leyenda
-
-matplot(resultados, type="b", lty = 1, lwd = 1, pch = 1:ncol(resultados),
-        main = "Detección del Si tumor", 
-        xlab = "Número de iteración",
-        ylab = "Cantidad de tumores detectados",
-        col = rainbow(ncol(resultados)))
-legend(par('usr')[2], par('usr')[4], legend = colnames(resultados),bty='n', xpd=NA,
-       pch=1:ncol(resultados), col = rainbow(ncol(resultados))) # La leyenda
+stopCluster(clp)
 ```
 
 2. Repita el ejercicio anterior, pero en lugar de sumar la cantidad de 1’s, promedie los errores globales cometidos en los diferentes grupos (folds). Luego grafique las 5 iteraciones para todos los m ́etodos vistos en el curso en el mismo gr ́afico. ¿Se puede determinar con claridad cua ́l algoritmo es el mejor?
 ```{r}
+# Inicia el Proceso Paralelo
+# Creamos peones
+peones <- parallel::detectCores()
+clp <- makeCluster(peones, type = "SOCK")
 
+ejecutar.prediccion <- function(datos, formula, muestra, metodo, ...) {
+  ttesting <- datos[muestra, ]
+  ttraining <- datos[-muestra, ]
+  #modelo <- metodo(formula, data = ttraining, ...)
+  modelo <- do.call(metodo, list(formula, data = ttraining, ...))
+  prediccion <- predict(modelo, ttesting, type = "class")
+  MC <- confusion.matrix(ttesting, prediccion)
+  return(MC)
+}
+
+# La siguiente función permite fijar parámetros específicos para cada método, lo cual es útil para usar otros parámetros que no sean los default.
+
+ejecutar.prediccion.particular <- function(datos, formula, muestra, metodo) {
+  if(metodo == "train.svm"){return(ejecutar.prediccion(datos, formula, muestra, metodo, kernel = "radial", probability = FALSE))}
+  if(metodo == "train.knn"){return(ejecutar.prediccion(datos, formula, muestra, metodo, kmax = 37))}
+  if(metodo == "train.bayes"){return(ejecutar.prediccion(datos, formula, muestra, metodo))}
+  if(metodo == "train.rpart"){return(ejecutar.prediccion(datos, formula, muestra, metodo))}
+  if(metodo == "train.randomForest"){return(ejecutar.prediccion(datos, formula, muestra, metodo, importance = TRUE))}
+  if(metodo == "train.ada"){return(ejecutar.prediccion(datos, formula, muestra, metodo, iter = 20, nu = 1, type = "discrete"))}
+  if(metodo == "train.nnet"){return(ejecutar.prediccion(datos, formula, muestra, metodo, size = 5, rang = 0.1, decay = 5e-04, maxit = 100, trace = FALSE))}
+  if(metodo == "train.xgboost"){return(ejecutar.prediccion(datos, formula, muestra, metodo, nrounds = 79, print_every_n = 10, maximize = F , eval_metric = "error"))}
+  if(metodo == "train.glm"){return(ejecutar.prediccion(datos, formula, muestra, metodo))}
+  if(metodo == "train.neuralnet"){return(ejecutar.prediccion(datos, formula, muestra, metodo,hidden = c(8,6,4), linear.output = FALSE, threshold = 0.5, stepmax = 1e+06))}
+}
+
+
+# Constructor del cluster
+numero.filas <- nrow(datos)
+cantidad.validacion.cruzada <- 5
+cantidad.grupos <- 10
+metodos <- c("train.svm", "train.knn", "train.bayes", "train.rpart", "train.randomForest", "train.ada", "train.nnet",
+             "train.xgboost", "train.neuralnet", "train.glm")
+
+deteccion.error.svm <- c()
+deteccion.error.knn <- c()
+deteccion.error.bayes <- c()
+deteccion.error.arbol <- c()
+deteccion.error.bosque <- c()
+deteccion.error.potenciacion <- c()
+deteccion.error.red <- c()
+deteccion.error.xgboost <- c()
+deteccion.error.red.neu <- c()
+deteccion.error.glm <- c()
+
+# Exportamos paquetes a los procesadores
+ignore <- clusterEvalQ(clp, {
+  library(dplyr)
+  library(traineR)
+  return(NULL)
+})
+
+# Exportamos los datos y las funciones a los procesadores
+clusterExport(clp, list("datos", "ejecutar.prediccion", "ejecutar.prediccion.particular"))
+
+# Para medir el tiempo de ejecución
+tiempo.paralelo <- Sys.time()
+
+# Validación cruzada 5 veces
+for(i in 1:cantidad.validacion.cruzada) {
+  grupos <- createFolds(1:numero.filas, cantidad.grupos)  # Crea los 10 grupos
+  error.svm <- 0
+  error.knn <- 0
+  error.bayes <- 0
+  error.arbol <- 0
+  error.bosque <- 0
+  error.potenciacion <- 0
+  error.red <- 0
+  error.xg  <- 0
+  error.red.neu <- 0
+  error.glm <- 0
+  
+  # Este ciclo es el que hace validación cruzada con 10 grupos
+  for(k in 1:cantidad.grupos) {
+    muestra <- grupos[[k]]  # Por ser una lista requiere de doble paréntesis
+    # Exportamos la muestra a los procesadores
+    clusterExport(clp, "muestra")
+    
+    resultado <- clusterApply(clp, metodos, function(metodo) {
+      MC <- ejecutar.prediccion.particular(datos = datos, formula = BuenPagador~., muestra = muestra, metodo = metodo)
+      # Cálculo del ERROR
+      error.metodo <- (1-(sum(diag(MC)))/sum(MC))*100
+      valores <- list(Tipo = metodo, Error = error.metodo)
+      return(valores)
+    })
+    
+    for (j in seq_along(metodos)) {
+      if (resultado[[j]][[1]] == "train.svm")
+        error.svm <- error.svm + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.knn")
+        error.knn <- error.knn + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.bayes")
+        error.bayes <- error.bayes + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.rpart")
+        error.arbol <- error.arbol + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.randomForest")
+        error.bosque <- error.bosque + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.ada")
+        error.potenciacion <- error.potenciacion + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.nnet")
+        error.red <- error.red + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.xgboost")
+        error.xg <- error.xg + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.neuralnet")
+        error.red.neu <- error.red.neu + resultado[[j]][[2]]
+      else if (resultado[[j]][[1]] == "train.glm")
+        error.glm <- error.glm + resultado[[j]][[2]]
+    }
+    
+  }
+  deteccion.error.svm[i] <- error.svm / cantidad.grupos
+  deteccion.error.knn[i] <- error.knn / cantidad.grupos
+  deteccion.error.bayes[i] <- error.bayes / cantidad.grupos
+  deteccion.error.arbol[i] <- error.arbol / cantidad.grupos
+  deteccion.error.bosque[i] <- error.bosque / cantidad.grupos
+  deteccion.error.potenciacion[i] <- error.potenciacion / cantidad.grupos
+  deteccion.error.red[i] <- error.red / cantidad.grupos
+  deteccion.error.xgboost[i] <- error.xg / cantidad.grupos
+  deteccion.error.red.neu[i] <- error.red.neu / cantidad.grupos
+  deteccion.error.glm[i] <- error.glm / cantidad.grupos
+}
+stopCluster(clp)
+```
+Gráfico
+```{r}
+
+par(oma=c(0, 0, 0, 8)) # Hace espacio para la leyenda
+matplot(resultados, type="b", lty = 1, lwd = 1, pch = 1:ncol(resultados),
+        main = "Comparación del Error Global", 
+        xlab = "Número de iteración",
+        ylab = "Porcentaje de Error Global",
+        col = rainbow(ncol(resultados)))
+legend(par('usr')[2], par('usr')[4], legend = colnames(resultados),bty='n', xpd=NA, cex = 0.8,
+       pch=1:ncol(resultados), col = rainbow(ncol(resultados))) # La leyenda
 ```
 
 3. Para estar realmente seguros de cua ́l de los tipos algoritmos es mejor, modifique (una en uno solo co ́digo) los co ́digos de los dos ejercicios anteriores de manera que, en lugar de sumar la cantidad de 1’s detectados y de promediar los errores globales, guarde en cada iteracio ́n (en listas) las matrices de confusio ́n de cada uno de los 3 algoritmos. Luego al
