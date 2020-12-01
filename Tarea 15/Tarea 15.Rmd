@@ -1,9 +1,13 @@
 ---
 title: ""
+author: "Shantal Chavarría"
 date: "`r Sys.Date()`"
 output:
-  rmdformats::html_clean:
+  rmdformats::html_document:
     highlight: kate
+    df_print: paged
+    toc: TRUE
+    toc_float: TRUE 
 ---
 
 
@@ -197,5 +201,765 @@ knitr::include_graphics("Captura de Pantalla 2020-11-24 a la(s) 16.51.31.png")
 ## 1.
 
 Usando la definición de curva ROC calcule y grafique “a mano” la curva ROC, use un umbral $T = 0$ y un paso de $0,05$. Es decir, debe hacerlo variando el umbral y calculando las matrices de confusión.
+
+```{r}
+library(magrittr)
+library(dplyr)
+clase <- c(1,0,0,1,0,0,1,0,0,1)
+score <- c(0.61,0.06,0.80,0.11,0.66,0.46,0.40,0.19,0,0.91)
+
+tabla <- data.frame(clase,score)
+
+#Se ordenan los valores
+tabla <- arrange(tabla, desc(score))
+tabla
+```
+
+```{r,fig.width=12, fig.height=6}
+t <- seq(0,1,by = 0.05)
+
+plotROC(score, clase)
+
+
+
+for ( umbral in t) {
+  Prediccion <- 0
+  
+  for (i in 1:10) {
+  
+    if(tabla$score[i] > umbral){
+      
+        Prediccion[i] <- 1
+    }
+    else{
+      
+        Prediccion[i] <- 0
+    }
+      
+  
+  }
+  MC <- table(Clase = tabla$clase, Pred = factor(Prediccion, levels = c(0, 1)))
+  # Graficamos punto
+  points(MC[1,2]/sum(MC[1,]), MC[2,2]/sum(MC[2,]), col = "blue")
+  text(MC[1,2]/sum(MC[1,]) + 0.02, MC[2,2]/sum(MC[2,]) - 0.02, umbral)
+  print(umbral)
+  print(MC)
+  
+}
+
+```
+
+## 2. 
+
+Verifique el resultado anterior usando el código visto en clase.
+
+```{r, fig.width=12, fig.height=6}
+# Graficamos ROC con funciones de paquete ROCR
+plotROC(score, clase)
+
+# Graficamos puntos con algoritmo
+i <- 1  # Contador
+FP_r <- -1  # Para que entre al condicional en la primera iteración
+TP_r <- -1  # Para que entre al condicional en la primera iteración
+
+for(Umbral in seq(0, 1, by = 0.05)) {
+  
+  Prediccion <- ifelse(score >= Umbral, 1, 0)
+  
+  MC <- table(clase, Pred = factor(Prediccion, levels = c(0, 1)))
+  
+  # Condicional para no imprimir puntos repetidos
+  if(FP_r != MC[1, 2] / sum(MC[1, ]) | TP_r != MC[2, 2] / sum(MC[2, ])) {
+    
+    FP_r <- MC[1, 2] / sum(MC[1, ])  # Tasa de Falsos Positivos
+    TP_r <- MC[2, 2] / sum(MC[2, ])  # Tasa de Verdaderos Positivos
+    
+    # Graficamos punto
+    points(FP_r, TP_r, col = "blue")
+    text(FP_r + 0.02, TP_r - 0.02, Umbral)
+    
+    # Imprimimos resultados
+    cat("Punto i = ", i, "\n")  
+    cat("Umbral = T = ", Umbral, "\n")
+    cat("MC = \n")
+    print(MC)
+    cat("Tasa FP = ", round(FP_r, 2), "\n")
+    cat("Tasa TP = ", round(TP_r, 2), "\n") 
+    cat("\n") 
+    
+    i <- i + 1  # Aumentamos contador
+    
+  }
+  
+}
+```
+
+## 3. 
+
+Usando el algoritmo eficiente para la curva ROC calcule y grafique “a mano” la curva ROC, use un umbral T = 0,1 y un paso de 0,1.
+
+Primer Punto
+
+T = 0.1
+
+i = 1
+
+0.91 > T y class = P => TP = 1
+
+FP = 0
+TP = 1
+
+FP/6 = 0
+TP/4 = 0.25
+
+Punto = (0,0.25)
+
+Segundo Punto
+T = 0.2
+
+i = 2
+
+0.91 > T y class = P => TP = 1
+0.80 > T y class = N => FP = 1
+
+FP = 1
+TP = 1
+
+FP/6 = 0.17
+TP/4 = 0.25
+
+Punto = (0.17,0.25)
+
+Tercer Punto
+
+T = 0.3
+
+i = 3
+
+0.91 > T y class = P => TP = 1
+0.80 > T y class = N => FP = 1
+0.66 > T y class = N => FP = 2
+
+FP = 2
+TP = 1
+
+FP/6 = 0.33
+TP/4 = 0.25
+
+Punto = (0.33,0.25)
+
+Cuarto Punto
+
+T = 0.4
+
+i = 4
+
+0.91 > T y class = P => TP = 1
+0.80 > T y class = N => FP = 1
+0.66 > T y class = N => FP = 2
+0.61 > T y class = P => TP = 2
+
+FP = 2
+TP = 2
+
+FP/6 = 0.33
+TP/4 = 0.5
+
+Punto = (0.33,0.5)
+
+Quinto Punto
+
+T = 0.5
+
+i = 5 
+
+0.91 > T y class = P => TP = 1
+0.80 > T y class = N => FP = 1
+0.66 > T y class = N => FP = 2
+0.61 > T y class = P => TP = 2
+0.46 <= T y class = N => FP = 3
+
+FP = 3
+TP = 2
+
+FP/6 = 0.5
+TP/4 = 0.5
+
+Punto = (0.5,0.5)
+
+Sexto Punto
+
+T = 0.6
+
+i = 6
+
+0.91 > T y class = P => TP = 1
+0.80 > T y class = N => FP = 1
+0.66 > T y class = N => FP = 2
+0.61 > T y class = P => TP = 2
+0.46 <= T y class = N => FP = 3
+0.40 <= T y class = P => TP = 3
+
+FP = 3
+TP = 3
+
+FP/6 = 0.5
+TP/4 = 0.75
+
+Punto = (0.5,0.75)
+
+Séptimo punto
+
+T = 0.7
+
+i = 7
+
+0.91 > T y class = P => TP = 1
+0.80 > T y class = N => FP = 1
+0.66 <= T y class = N => FP = 2
+0.61 <= T y class = P => TP = 2
+0.46 <= T y class = N => FP = 3
+0.40 <= T y class = P => TP = 3
+0.19 <= T y class = N => FP = 4
+
+FP = 4
+TP = 3
+
+FP/6 = 0.67
+TP/4 = 0.75
+
+Punto = (0.67,0.75)
+
+Octavo Punto
+
+T= 0.8
+
+i = 8 
+
+0.91 > T y class = P => TP = 1
+0.80 <= T y class = N => FP = 1
+0.66 <= T y class = N => FP = 2
+0.61 <= T y class = P => TP = 2
+0.46 <= T y class = N => FP = 3
+0.40 <= T y class = P => TP = 3
+0.19 <= T y class = N => FP = 4
+0.11 <= T y class = P => TP = 4
+
+FP = 4
+TP = 4
+
+FP/6 = 0.67
+TP/4 = 1
+
+Punto = (0.67,1)
+
+Noveno Punto
+
+T = 0.9
+
+i = 9
+
+0.91 > T y class = P => TP = 1
+0.80 <= T y class = N => FP = 1
+0.66 <= T y class = N => FP = 2
+0.61 <= T y class = P => TP = 2
+0.46 <= T y class = N => FP = 3
+0.40 <= T y class = P => TP = 3
+0.19 <= T y class = N => FP = 4
+0.11 <= T y class = P => TP = 4
+0.06 <= T y class = N => FP = 5
+
+FP = 5
+TP = 4
+
+FP/6 = 0.83
+TP/4 = 1
+
+Punto = (0.83,1)
+
+Décimo Punto
+
+T = 1
+
+i = 10
+
+0.91 <= T y class = P => TP = 1
+0.80 <= T y class = N => FP = 1
+0.66 <= T y class = N => FP = 2
+0.61 <= T y class = P => TP = 2
+0.46 <= T y class = N => FP = 3
+0.40 <= T y class = P => TP = 3
+0.19 <= T y class = N => FP = 4
+0.11 <= T y class = P => TP = 4
+0.06 <= T y class = N => FP = 5
+0.00 <= T y class = N => FP = 6 
+
+FP = 6
+TP = 4
+
+FP/6 = 1
+TP/4 = 1
+
+Punto = (1,1)
+
+```{r, fig.width=12, fig.height=6}
+# True Positivos
+y =c(0.25,0.25,0.5,0.5,0.75,0.75,1,1,1.25,1.5)
+
+# False Positivos
+x = c(0,0.17,0.33,0.33,0.5,0.5,0.67,0.67,0.83,1)
+
+umbral = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1)
+
+plotROC(tabla$score,tabla$clase)
+points(x,y, col = "blue")
+text( x + 0.02, y - 0.02, round(umbral,2))
+
+```
+## 4. 
+
+Verifique el resultado anterior usando el código visto en clase para el algoritmo eficiente.
+
+```{r, fig.width=12, fig.height=6}
+# Graficamos ROC con funciones de paquete ROCR
+plotROC(tabla$score, tabla$clase)
+
+# Aquí se inicializan para que dé igual a la corrida a pie
+Umbral <- 0.1
+Paso <- 0.1
+
+N <- 6 # ceros
+P <- 4 # unos
+
+TP <- 0 
+FP <- 0
+
+for(i in 1:10) {
+  
+  if(score[i] > Umbral){
+    if(clase[i] == 1){
+      TP <- TP + 1
+    }  
+    else{ 
+      FP <- FP + 1
+    }
+  }
+    else{ 
+      if(clase[i] == 0){
+        FP <- FP + 1
+      }
+      else{ 
+        TP <- TP + 1
+      }
+    }
+      
+      # Graficamos punto
+      points(FP / N, TP / P, col = "blue")
+      text(FP / N + 0.02, TP/P - 0.02, round(Umbral, 2))
+      
+      # Imprimimos resultado
+      cat("Punto i = ", i, "\n")  
+      cat("Umbral = T = ", Umbral, "\n")
+      cat("FP/N = ", round(FP / N, 2), "\n")
+      cat("TP/P = ", round(TP / P, 2), "\n") 
+      cat("\n") 
+      
+      Umbral <- Umbral + Paso  
+}
+
+```
+
+# Ejercicio 3 [30 puntos]
+
+Esta pregunta utiliza los datos SAheart.csv sobre muerte del corazón en Sudáfrica. La variable que queremos predecir es chd que es un indicador de muerte coronaria basado en algunas variables predictivas (factores de riesgo) como son el fumado, la obesidad, las bebidas alcohólicas, entre otras. Las variables son:
+
+• sbp: systolic blood pressure (numérica). 
+• tobacco: cumulative tobacco (kg) (numérica).
+• ldl: low densiity lipoprotein cholesterol (numérica).
+• Adiposity: Adiposity level (numérica).
+• famhist: family history of heart disease (Present, Absent) (categérica).
+• typea: type-A behavior (numérica).
+• Obesity: Obesity of the person (numérica).
+• alcohol: current alcohol consumption (numérica).
+• age: age at onset (numérica).
+• chd: coronary heart disease (categórica).
+
+Realice lo siguiente:
+
+```{r}
+library(traineR)
+SAheart <-  read.table("SAheart.csv", 
+    ";", dec = ".", header = TRUE, stringsAsFactors = TRUE)
+
+
+muestra <- sample(1:nrow(SAheart),floor(nrow(SAheart)*0.20))
+
+ttesting <- SAheart[muestra,]
+taprendizaje <- SAheart[-muestra,]
+
+```
+
+## 1. 
+
+Usando todos los métodos vistos en el curso, para la tabla SAheart.csv con el 80 % de los datos para la tabla aprendizaje y un 20 % para la tabla testing determine la mejor Probabilidad de Corte para cada uno de estos métodos, de forma tal que se prediga de la mejor manera posible la categoría Si de la variable chd, pero sin desmejorar de manera significativa la precisión global.
+
+### SVM
+
+```{r}
+
+modelo <- train.svm(chd ~ ., data = taprendizaje, kernel = "radial", probability = TRUE)
+
+prediccion <- predict(modelo, ttesting, type = "prob")
+
+
+Clase <- ttesting[,10]
+Score <- prediccion$prediction[,2]
+
+for(Corte in seq(1, 0, by = -0.05)) {
+  Prediccion <- ifelse(Score >= Corte, "Si", "No")
+  MC <- table(Clase, Pred = factor(Prediccion, levels = c("No", "Si")))
+  cat("\nCorte usado para la Probabilidad = ")
+  cat(Corte)
+  cat("\n")
+  print(general.indexes(mc=MC))
+  cat("\n========================================")
+}
+```
+
+Diría que el corte 0.3 es el mejor para la probabilidad
+
+#NNET
+
+```{r}
+modelo <- train.nnet(chd ~ ., data = taprendizaje, size = 2, maxit = 1000)
+
+prediccion <- predict(modelo, ttesting, type = "prob")
+
+
+Clase <- ttesting[,10]
+Score <- prediccion$prediction[,2]
+
+for(Corte in seq(1, 0, by = -0.05)) {
+  Prediccion <- ifelse(Score >= Corte, "Si", "No")
+  MC <- table(Clase, Pred = factor(Prediccion, levels = c("No", "Si")))
+  cat("\nCorte usado para la Probabilidad = ")
+  cat(Corte)
+  cat("\n")
+  print(general.indexes(mc=MC))
+  cat("\n========================================")
+}
+```
+Mejor corte 0.25
+### KNN
+
+```{r}
+modelo.rectangular <- train.knn(chd~., data = taprendizaje, kernel = "rectangular")
+
+prediccion <- predict(modelo.rectangular,ttesting,type = "prob")
+
+
+
+Clase <- ttesting[,10]
+Score <- prediccion$prediction[,2]
+
+for(Corte in seq(1, 0, by = -0.05)) {
+  Prediccion <- ifelse(Score >= Corte, "Si", "No")
+  MC <- table(Clase, Pred = factor(Prediccion, levels = c("No", "Si")))
+  cat("\nCorte usado para la Probabilidad = ")
+  cat(Corte)
+  cat("\n")
+  print(general.indexes(mc=MC))
+  cat("\n========================================")
+}
+```
+Mejor corte 0.35
+
+### Arboles
+
+```{r}
+modelo <- train.rpart(chd~., taprendizaje)
+
+prediccion <- predict(modelo,ttesting,type = "prob")
+
+Clase <- ttesting[,10]
+Score <- prediccion$prediction[,2]
+
+for(Corte in seq(1, 0, by = -0.05)) {
+  Prediccion <- ifelse(Score >= Corte, "Si", "No")
+  MC <- table(Clase, Pred = factor(Prediccion, levels = c("No", "Si")))
+  cat("\nCorte usado para la Probabilidad = ")
+  cat(Corte)
+  cat("\n")
+  print(general.indexes(mc=MC))
+  cat("\n========================================")
+}
+
+
+```
+
+Mejor corte 0.15
+
+### Bosques
+
+```{r}
+modelo <- train.randomForest(chd~., taprendizaje)
+
+prediccion <- predict(modelo,ttesting,type = "prob")
+
+Clase <- ttesting[,10]
+Score <- prediccion$prediction[,2]
+
+for(Corte in seq(1, 0, by = -0.05)) {
+  Prediccion <- ifelse(Score >= Corte, "Si", "No")
+  MC <- table(Clase, Pred = factor(Prediccion, levels = c("No", "Si")))
+  cat("\nCorte usado para la Probabilidad = ")
+  cat(Corte)
+  cat("\n")
+  print(general.indexes(mc=MC))
+  cat("\n========================================")
+}
+
+```
+Mejor corte 0.25
+
+### Potenciacion
+
+```{r}
+modelo<- train.ada(chd~.,data=taprendizaje,iter=80,nu=1,type="real")
+
+prediccion <- predict(modelo,ttesting,type = "prob")
+
+Clase <- ttesting[,10]
+Score <- prediccion$prediction[,2]
+
+for(Corte in seq(1, 0, by = -0.05)) {
+  Prediccion <- ifelse(Score >= Corte, "Si", "No")
+  MC <- table(Clase, Pred = factor(Prediccion, levels = c("No", "Si")))
+  cat("\nCorte usado para la Probabilidad = ")
+  cat(Corte)
+  cat("\n")
+  print(general.indexes(mc=MC))
+  cat("\n========================================")
+}
+
+```
+
+Mejor corte 0.05
+
+### Xtreme Gradiente Boosting
+
+```{r}
+modelo <- train.xgboost(chd~.,taprendizaje, nrounds = 500,verbose = F)
+
+prediccion <- predict(modelo,ttesting,type = "prob")
+
+Clase <- ttesting[,10]
+Score <- prediccion$prediction[,2]
+
+for(Corte in seq(1, 0, by = -0.05)) {
+  Prediccion <- ifelse(Score >= Corte, "Si", "No")
+  MC <- table(Clase, Pred = factor(Prediccion, levels = c("No", "Si")))
+  cat("\nCorte usado para la Probabilidad = ")
+  cat(Corte)
+  cat("\n")
+  print(general.indexes(mc=MC))
+  cat("\n========================================")
+}
+
+
+```
+
+Mejor corte 0.05
+
+### LDA
+
+```{r}
+library(MASS)
+modelo <- lda(chd~., taprendizaje)
+
+prediccion <- predict(modelo,ttesting,type = "prob")
+
+Clase <- ttesting[,10]
+Score <- prediccion$posterior[,2]
+
+for(Corte in seq(1, 0, by = -0.05)) {
+  Prediccion <- ifelse(Score >= Corte, "Si", "No")
+  MC <- table(Clase, Pred = factor(Prediccion, levels = c("No", "Si")))
+  cat("\nCorte usado para la Probabilidad = ")
+  cat(Corte)
+  cat("\n")
+  print(general.indexes(mc=MC))
+  cat("\n========================================")
+}
+
+```
+Merjor corte 0.35
+
+### Bayes
+
+```{r}
+modelo <- train.bayes(chd~.,taprendizaje)
+
+prediccion <- predict(modelo,ttesting,type = "prob")
+
+Clase <- ttesting[,10]
+Score <- prediccion$prediction[,2]
+
+for(Corte in seq(1, 0, by = -0.05)) {
+  Prediccion <- ifelse(Score >= Corte, "Si", "No")
+  MC <- table(Clase, Pred = factor(Prediccion, levels = c("No", "Si")))
+  cat("\nCorte usado para la Probabilidad = ")
+  cat(Corte)
+  cat("\n")
+  print(general.indexes(mc=MC))
+  cat("\n========================================")
+}
+```
+Mejor corte 0.3
+
+## 2. El objetivo de este ejercicio es comparar todos los métodos predictivos vistos en el curso con esta tabla de datos. Aquí interesa predecir en la variable chd, Usando los paquetes snow y traineR programe en paralelo 3 Validaciones Cruzadas con 10 grupos para los métodos SVM, KNN, Árboles, Bosques, Potenciación, eXtreme Gradient Boosting, LDA, Bayes y Redes Neuronales, KNN y Potenciación, para esto use en cada método la probabilidad de corte obtenida en el ejercicio anterior (puede usar los parámetros por defecto en cada método). Luego grafique las 5 iteraciones para todos los métodos en el mismo gráfico. ¿Se puede determinar con claridad cuál métodos es el mejor?
+
+```{r,fig.width=12, fig.height=6}
+library(MASS)
+library(caret)
+library(traineR)
+
+numero.filas <- nrow(SAheart)
+cantidad.validacion.cruzada <- 3
+cantidad.grupos <- 10
+
+
+deteccion.si.svm <- c()
+deteccion.si.arb <- c()
+deteccion.si.rForest<- c()
+deteccion.si.xg <- c()
+deteccion.si.lda <- c()
+deteccion.si.bayes <- c()
+deteccion.si.nnet <- c()
+deteccion.si.pot <- c()
+
+corte.svm <- 0.3
+corte.arb <- 0.15
+corte.rForest<- 0.25
+corte.xg <- 0.05
+corte.lda <- 0.35
+corte.bayes <- 0.3
+corte.nnet <- 0.25
+corte.pot <- 0.05
+
+#Hacemos validación cruzada 3 veces
+for (i in 1:cantidad.validacion.cruzada) {
+  #se generan los 10 grupos
+  grupos <- createFolds(1:nrow(SAheart),10)
+  
+  si.svm <- 0
+  si.arb <- 0
+  si.rForest<- 0
+  si.xg <- 0
+  si.lda <- 0
+  si.bayes <- 0
+  si.nnet <- 0
+  si.pot <- 0
+  
+  
+  #ciclo que empieza a hacer validación cruzada con 10 grupos
+  for (k in 1:cantidad.grupos) {
+    
+    muestra <- grupos[[k]]
+    ttesting <- SAheart[muestra,]
+    taprendizaje <- SAheart[-muestra,]
+    
+    modelo.svm <- train.svm(chd ~ ., data = taprendizaje, probability = TRUE)
+    modelo.rpart <- train.rpart(chd~., taprendizaje)
+    modelo.rForest <- train.randomForest(chd~., taprendizaje)
+    modelo.xg <- train.xgboost(chd~.,taprendizaje, nrounds = 500,verbose = F)
+    modelo.lda <- lda(chd~., taprendizaje)
+    modelo.bayes <- train.bayes(chd~.,taprendizaje)
+    modelo.nnet <- train.nnet(chd~.,taprendizaje, size =2,maxit=1000)
+    modelo.pot <- train.ada(chd~.,data=taprendizaje,iter=80,nu=1,type="real")
+    
+    
+    prediccion.svm <- predict(modelo.svm, ttesting, type = "prob")
+    prediccion.rpart <- predict(modelo.rpart, ttesting, type = "prob")
+    prediccion.rForest <- predict(modelo.rForest, ttesting, type = "prob")
+    prediccion.xg <- predict(modelo.xg, ttesting, type = "prob")
+    prediccion.lda <- predict(modelo.lda, ttesting, type = "prob")
+    prediccion.bayes <- predict(modelo.bayes, ttesting, type = "prob")
+    prediccion.nnet <- predict(modelo.nnet, ttesting, type = "prob")
+    prediccion.pot <- predict(modelo.pot, ttesting, type = "prob")
+    
+    
+    Clase <- ttesting[,10]
+    
+    Score.svm <- prediccion.svm$prediction[,2]
+    Score.rpart <- prediccion.rpart$prediction[,2]
+    Score.rForest <- prediccion.rForest$prediction[,2]
+    Score.xg <- prediccion.xg$prediction[,2]
+    Score.lda <- prediccion.lda$posterior[,2]
+    Score.bayes <- prediccion.bayes$prediction[,2]
+    Score.nnet <- prediccion.nnet$prediction[,2]
+    Score.pot <- prediccion.pot$prediction[,2]
+    
+    Prediccion.svm <- ifelse(Score.svm >= corte.svm, "Si", "No")
+    Prediccion.rpart <- ifelse(Score.rpart >= corte.arb, "Si", "No")
+    Prediccion.rForest <- ifelse(Score.rForest >= corte.rForest, "Si", "No")
+    Prediccion.xg <- ifelse(Score.xg >= corte.xg, "Si", "No")
+    Prediccion.lda <- ifelse(Score.lda >= corte.lda, "Si", "No")
+    Prediccion.bayes <- ifelse(Score.bayes >= corte.bayes, "Si", "No")
+    Prediccion.nnet <- ifelse(Score.nnet >= corte.nnet, "Si", "No")
+    Prediccion.pot <- ifelse(Score.pot >= corte.pot, "Si", "No")
+    
+    MC.svm <- table(Clase, Pred = factor(Prediccion.svm, levels = c("No", "Si")))
+    MC.rpart <- table(Clase, Pred = factor(Prediccion.rpart, levels = c("No", "Si")))
+    MC.rForest <- table(Clase, Pred = factor(Prediccion.rForest, levels = c("No", "Si")))
+    MC.xg <- table(Clase, Pred = factor(Prediccion.xg, levels = c("No", "Si")))
+    MC.lda <- table(Clase, Pred = factor(Prediccion.lda, levels = c("No", "Si")))
+    MC.bayes <- table(Clase, Pred = factor(Prediccion.bayes, levels = c("No", "Si")))
+    MC.nnet <- table(Clase, Pred = factor(Prediccion.nnet, levels = c("No", "Si")))
+    MC.pot <- table(Clase, Pred = factor(Prediccion.pot, levels = c("No", "Si")))
+    
+
+    si.svm <- si.svm + MC.svm["Si", "Si"]
+    si.arb <- si.arb + MC.rpart["Si", "Si"]
+    si.rForest<- si.rForest + MC.rForest["Si", "Si"]
+    si.xg <- si.xg + MC.xg["Si", "Si"]
+    si.lda <- si.lda + MC.lda["Si", "Si"]
+    si.bayes <- si.bayes + MC.bayes["Si", "Si"]
+    si.nnet <- si.nnet + MC.nnet["Si", "Si"]
+    si.pot <- si.pot + MC.pot["Si", "Si"]
+    
+  }
+  
+  deteccion.si.svm[i] <- si.svm
+  deteccion.si.arb[i] <- si.arb
+  deteccion.si.rForest[i]<- si.rForest
+  deteccion.si.xg[i] <- si.xg
+  deteccion.si.lda[i] <- si.lda
+  deteccion.si.bayes[i] <- si.bayes
+  deteccion.si.nnet[i] <- si.nnet
+  deteccion.si.pot[i] <- si.pot
+  
+}
+
+resultados <- data.frame("SVM"     = deteccion.si.svm,
+                         "Arboles"     = deteccion.si.arb,
+                         "Bosques Aleatorios" = deteccion.si.rForest,
+                         "Xtreme Gradient"    = deteccion.si.xg,
+                         "LDA" = deteccion.si.lda,
+                         "Bayes" = deteccion.si.bayes,
+                         "NNET" = deteccion.si.nnet,
+                         "Potenciacion" = deteccion.si.pot) # Preparamos los datos
+
+par(oma=c(0, 0, 0, 5)) # Hace espacio para la leyenda
+
+matplot(resultados, type="b", lty = 1, lwd = 1, pch = 1:ncol(resultados),
+        main = "Detección del SI chd", 
+        xlab = "Número de iteración",
+        ylab = "Cantidad de Si enfermedades coronarias",
+        col = rainbow(ncol(resultados)))
+legend(par('usr')[2], par('usr')[4], legend = colnames(resultados),bty='n', xpd=NA,
+       pch=1:ncol(resultados), col = rainbow(ncol(resultados))) # La leyenda
+```
+El método que calculó el mayor número de tumores fue redes Neuronales para todas la iteraciones
 
 
